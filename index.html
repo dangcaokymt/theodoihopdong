@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dashboard Quản lý Hợp đồng - Fixed Index Sync</title>
+<title>Dashboard Quản lý Hợp đồng - Clean Data</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 *{box-sizing:border-box}
@@ -267,7 +267,6 @@ tr:hover td{ background: #f0f9ff; }
 Chart.defaults.color = '#64748b';
 Chart.defaults.borderColor = '#e2e8f0';
 
-// Link Google Sheets
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQDKcJK0XdTrylFiP9Iaz2jA8HR6Cel5OascnacRm14HjScgBfbbEjuiNVZpEAIKGrbrRytGGwCscTg/pub?gid=0&single=true&output=tsv";
 
 let rows = [];
@@ -289,7 +288,6 @@ function parseMoneySmart(val) {
     return Math.round(Number(str) * 1e9);
   }
 
-  // Lấy toàn bộ chữ số
   let digitsOnly = str.replace(/[^0-9]/g, '');
   return Number(digitsOnly) || 0;
 }
@@ -311,33 +309,48 @@ function cleanCategory(str, type) {
   return s;
 }
 
-// Đọc theo THỨ TỰ CỘT (Index) cố định trong Google Sheets
 function parseTSV(text) {
   const lines = text.trim().split('\n').map(l => l.trim()).filter(Boolean);
   if (lines.length <= 1) return [];
   
   const delimiter = lines[0].includes('\t') ? '\t' : ',';
+  let parsed = [];
+  let validIndex = 1;
 
-  return lines.slice(1).map((line, idx) => {
-    // Tách cột theo định dạng TSV/CSV
-    const cols = line.split(delimiter).map(v => v.replace(/^"|"$/g, '').trim());
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(delimiter).map(v => v.replace(/^"|"$/g, '').trim());
+    
+    // Tự động bỏ qua hàng phụ đề rác (như "Người ký hợp đồng/ Chức vụ", "Tên đơn vị"...)
+    let title = cols[1] || cols[0] || '';
+    if (title.toLowerCase().includes('người ký') || title.toLowerCase().includes('chức vụ') || title.toLowerCase().includes('tên đơn vị')) {
+      continue;
+    }
 
-    // Đọc theo vị trí cột: 
-    // Cột 0: STT | Cột 1: Tên HĐ | Cột 2: Đơn vị cung | Cột 3: Ký cung | Cột 4: Đơn vị cầu | Cột 5: Ký cầu | Cột 6: Giá trị | Cột 7: Lĩnh vực | Cột 8: Loại HĐ | Cột 9: Công nghệ | Cột 10: Người quản lý
-    return {
-      "STT": parseInt(cols[0]) || (idx + 1),
+    let val = parseMoneySmart(cols[6]);
+    // Nếu không khớp cột 6, quét lấy số tiền ở các cột lân cận
+    if (val === 0) {
+      for (let c = 0; c < cols.length; c++) {
+        let v = parseMoneySmart(cols[c]);
+        if (v > val) val = v;
+      }
+    }
+
+    parsed.push({
+      "STT": validIndex++,
       "Nội dung/Tên hợp đồng": cols[1] || 'Chưa có tên',
       "Đơn vị cung": cols[2] || '',
       "Người ký bên cung": cols[3] || '',
       "Đơn vị cầu": cols[4] || '',
       "Người ký bên cầu": cols[5] || '',
-      "Giá trị hợp đồng": parseMoneySmart(cols[6]),
+      "Giá trị hợp đồng": val,
       "Lĩnh vực": cleanCategory(cols[7], 'linhvuc'),
       "Loại hợp đồng": cols[8] || 'Chưa phân loại',
       "Công nghệ chiến lược": cols[9] || 'Chưa phân loại',
       "Người quản lý": cleanCategory(cols[10], 'quanly')
-    };
-  });
+    });
+  }
+
+  return parsed;
 }
 
 async function fetchSheetData() {
