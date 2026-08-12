@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dashboard Quản lý Hợp đồng - Light 3D Hi-Tech</title>
+<title>Dashboard Quản lý Hợp đồng - Clean Data</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 *{box-sizing:border-box}
@@ -317,13 +317,16 @@ function parseTSV(text) {
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(delimiter).map(v => v.replace(/^"|"$/g, '').trim());
     
-    let title = cols[1] || cols[0] || '';
-    let cung = cols[2] || '';
-    
-    // CHỈ LỌC BỎ DUY NHẤT HÀNG TIÊU ĐỀ PHỤ
-    if (title.toLowerCase().includes('người ký hợp đồng') || 
-        cung.toLowerCase().includes('tên đơn vị') || 
-        title.toLowerCase().includes('nội dung/tên hợp đồng')) {
+    let col0 = cols[0] || '';
+    let col1 = cols[1] || '';
+    let col2 = cols[2] || '';
+
+    const fullRowText = cols.join(' ').toLowerCase();
+    if (fullRowText.includes('người ký') || 
+        fullRowText.includes('chức vụ') || 
+        fullRowText.includes('tên đơn vị') || 
+        fullRowText.includes('nội dung/tên hợp đồng') ||
+        (!/^\d+$/.test(col0) && col1.toLowerCase().includes('người ký'))) {
       continue;
     }
 
@@ -335,11 +338,10 @@ function parseTSV(text) {
       }
     }
 
-    // Nhận tất cả hợp đồng có tên dài từ 2 ký tự trở lên
-    if (title.length >= 2) {
+    if (col1.length >= 2) {
       parsed.push({
         "STT": validIndex++,
-        "Nội dung/Tên hợp đồng": title,
+        "Nội dung/Tên hợp đồng": col1,
         "Đơn vị cung": cols[2] || '',
         "Người ký bên cung": cols[3] || '',
         "Đơn vị cầu": cols[4] || '',
@@ -486,9 +488,25 @@ function refreshUI() {
   apply();
 }
 
+// XUẤT CHUẨN MẪU GOOGLE SHEETS DẠNG EXCEL/CSV
 function exportCSV() {
   if (!filteredRows.length) return alert('Không có dữ liệu để xuất!');
-  let headers = ['STT', 'Tên hợp đồng', 'Đơn vị cung', 'Người ký bên cung', 'Đơn vị cầu', 'Người ký bên cầu', 'Giá trị hợp đồng (VNĐ)', 'Lĩnh vực', 'Loại hợp đồng', 'Công nghệ chiến lược', 'Người quản lý'];
+  
+  // Tiêu đề cột chuẩn mẫu 100% như trên Google Sheets của bạn
+  let headers = [
+    'STT', 
+    'Nội dung/Tên hợp đồng', 
+    'Đơn vị cung', 
+    'Người ký bên cung', 
+    'Đơn vị cầu', 
+    'Người ký bên cầu', 
+    'Giá trị hợp đồng', 
+    'Lĩnh vực', 
+    'Loại hợp đồng', 
+    'Công nghệ chiến lược', 
+    'Người quản lý'
+  ];
+  
   let csvRows = [headers.join(',')];
 
   filteredRows.forEach(r => {
@@ -508,10 +526,11 @@ function exportCSV() {
     csvRows.push(row.join(','));
   });
 
+  // Xuất file CSV định dạng UTF-8 BOM hiển thị tiếng Việt cực đẹp trong Microsoft Excel
   let blob = new Blob(["\ufeff" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
   let link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = `Danh_Sach_Hop_Dong_${new Date().toISOString().slice(0,10)}.csv`;
+  link.download = `HD_Dashboard_Export_${new Date().toISOString().slice(0,10)}.csv`;
   link.click();
 }
 
