@@ -320,22 +320,23 @@ function parseTSV(text) {
     let title = cols[1] || cols[0] || '';
     let cung = cols[2] || '';
     
-    // LỌC SẠCH DÒNG RÁC:
-    // Bỏ qua nếu dòng quá ngắn, hoặc chứa từ khóa rác của tiêu đề con
-    if (title.length < 3 || 
-        title.toLowerCase().includes('người ký') || 
-        title.toLowerCase().includes('chức vụ') || 
-        cung.toLowerCase().includes('tên đơn vị') ||
-        title.toLowerCase().includes('nội dung/tên hợp đồng')) {
-      continue;
-    }
-
+    // BỘ LỌC DÒNG RÁC NGHIÊM NGẶT:
+    // Bỏ qua nếu là tiêu đề con, rác hoặc dòng không có số tiền giá trị hợp lệ
     let val = parseMoneySmart(cols[6]);
     if (val === 0) {
       for (let c = 0; c < cols.length; c++) {
         let v = parseMoneySmart(cols[c]);
         if (v > val) val = v;
       }
+    }
+
+    if (title.length < 3 || 
+        val === 0 ||
+        title.toLowerCase().includes('người ký') || 
+        title.toLowerCase().includes('chức vụ') || 
+        cung.toLowerCase().includes('tên đơn vị') ||
+        title.toLowerCase().includes('nội dung/tên hợp đồng')) {
+      continue;
     }
 
     parsed.push({
@@ -360,7 +361,8 @@ async function fetchSheetData() {
   const loading = document.getElementById('loading-indicator');
   loading.style.display = 'inline';
   
-  const targetUrl = SHEET_URL + '&t=' + new Date().getTime();
+  // Thêm random token để xóa bộ nhớ đệm (Clear Cache) hoàn toàn
+  const targetUrl = SHEET_URL + '&nocache=' + Math.random();
   const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
 
   try {
