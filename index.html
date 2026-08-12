@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dashboard Quản lý Hợp đồng - Clean Sync</title>
+<title>Dashboard Quản lý Hợp đồng - Fixed Index Sync</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 *{box-sizing:border-box}
@@ -267,7 +267,7 @@ tr:hover td{ background: #f0f9ff; }
 Chart.defaults.color = '#64748b';
 Chart.defaults.borderColor = '#e2e8f0';
 
-// Link Google Sheets của bạn
+// Link Google Sheets
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQDKcJK0XdTrylFiP9Iaz2jA8HR6Cel5OascnacRm14HjScgBfbbEjuiNVZpEAIKGrbrRytGGwCscTg/pub?gid=0&single=true&output=tsv";
 
 let rows = [];
@@ -278,21 +278,18 @@ const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const money = x => new Intl.NumberFormat('vi-VN').format(Number(x || 0)) + ' VNĐ';
 const shortMoney = x => x >= 1e9 ? (x / 1e9).toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' tỷ' : (x / 1e6).toLocaleString('vi-VN', { maximumFractionDigits: 0 }) + ' triệu';
 
-// Hàm bóc tách số tiền thông minh bất kể định dạng
+// Bóc tách số tiền thông minh
 function parseMoneySmart(val) {
   if (val === null || val === undefined) return 0;
   let str = val.toString().trim();
   if (!str) return 0;
-
-  // Nếu là số thuần túy lớn
-  if (/^\d+$/.test(str)) return Number(str);
 
   // Nếu nhập dạng thập phân đại diện Tỷ (VD: 0.54 hoặc 3.5)
   if (/^\d+(\.\d+)?$/.test(str) && Number(str) < 1000) {
     return Math.round(Number(str) * 1e9);
   }
 
-  // Nếu nhập chuỗi có dấu chấm/phẩy dạng tiền tệ (VD: 540.000.000 hoặc 540,000,000 VNĐ)
+  // Lấy toàn bộ chữ số
   let digitsOnly = str.replace(/[^0-9]/g, '');
   return Number(digitsOnly) || 0;
 }
@@ -314,53 +311,31 @@ function cleanCategory(str, type) {
   return s;
 }
 
-// Tìm vị trí thuộc tính theo từ khóa tương đối
-function getValueByKey(obj, keywords) {
-  const keys = Object.keys(obj);
-  for (let kw of keywords) {
-    const foundKey = keys.find(k => k.toLowerCase().replace(/\s+/g, '').includes(kw.toLowerCase()));
-    if (foundKey && obj[foundKey]) return obj[foundKey];
-  }
-  return '';
-}
-
+// Đọc theo THỨ TỰ CỘT (Index) cố định trong Google Sheets
 function parseTSV(text) {
   const lines = text.trim().split('\n').map(l => l.trim()).filter(Boolean);
-  if (!lines.length) return [];
+  if (lines.length <= 1) return [];
   
   const delimiter = lines[0].includes('\t') ? '\t' : ',';
-  const headers = lines[0].split(delimiter).map(h => h.replace(/^"|"$/g, '').trim());
 
   return lines.slice(1).map((line, idx) => {
-    const values = line.split(delimiter).map(v => v.replace(/^"|"$/g, '').trim());
-    let obj = {};
-    headers.forEach((h, i) => { obj[h] = values[i] || ''; });
+    // Tách cột theo định dạng TSV/CSV
+    const cols = line.split(delimiter).map(v => v.replace(/^"|"$/g, '').trim());
 
-    // Tự động quét bắt giá trị hợp đồng thông minh
-    let rawVal = getValueByKey(obj, ['giátrịhợpđồng', 'giátrị(vndo)', 'giátrị(tỷ', 'giátrị']);
-    
-    // Fallback: nếu không tìm thấy tên cột, quét giá trị số lớn nhất trong hàng
-    if (!rawVal) {
-      let maxNum = 0;
-      Object.values(obj).forEach(v => {
-        let n = parseMoneySmart(v);
-        if (n > maxNum) maxNum = n;
-      });
-      rawVal = maxNum;
-    }
-
+    // Đọc theo vị trí cột: 
+    // Cột 0: STT | Cột 1: Tên HĐ | Cột 2: Đơn vị cung | Cột 3: Ký cung | Cột 4: Đơn vị cầu | Cột 5: Ký cầu | Cột 6: Giá trị | Cột 7: Lĩnh vực | Cột 8: Loại HĐ | Cột 9: Công nghệ | Cột 10: Người quản lý
     return {
-      "STT": parseInt(getValueByKey(obj, ['stt'])) || (idx + 1),
-      "Nội dung/Tên hợp đồng": getValueByKey(obj, ['nộidung', 'tênhợpđồng', 'tênhđ']) || 'Chưa có tên',
-      "Đơn vị cung": getValueByKey(obj, ['đơnvịcung', 'bêncung']),
-      "Người ký bên cung": getValueByKey(obj, ['ngườikýbêncung']),
-      "Đơn vị cầu": getValueByKey(obj, ['đơnvịcầu', 'bêncầu']),
-      "Người ký bên cầu": getValueByKey(obj, ['ngườikýbêncầu']),
-      "Giá trị hợp đồng": parseMoneySmart(rawVal),
-      "Lĩnh vực": cleanCategory(getValueByKey(obj, ['lĩnhvực']), 'linhvuc'),
-      "Loại hợp đồng": getValueByKey(obj, ['loạihợpđồng', 'loạihđ']) || 'Chưa phân loại',
-      "Công nghệ chiến lược": getValueByKey(obj, ['côngnghệchiếnlược', 'côngnghệ']) || 'Chưa phân loại',
-      "Người quản lý": cleanCategory(getValueByKey(obj, ['ngườiquảnlý', 'quảnlý']), 'quanly')
+      "STT": parseInt(cols[0]) || (idx + 1),
+      "Nội dung/Tên hợp đồng": cols[1] || 'Chưa có tên',
+      "Đơn vị cung": cols[2] || '',
+      "Người ký bên cung": cols[3] || '',
+      "Đơn vị cầu": cols[4] || '',
+      "Người ký bên cầu": cols[5] || '',
+      "Giá trị hợp đồng": parseMoneySmart(cols[6]),
+      "Lĩnh vực": cleanCategory(cols[7], 'linhvuc'),
+      "Loại hợp đồng": cols[8] || 'Chưa phân loại',
+      "Công nghệ chiến lược": cols[9] || 'Chưa phân loại',
+      "Người quản lý": cleanCategory(cols[10], 'quanly')
     };
   });
 }
