@@ -486,11 +486,11 @@ function refreshUI() {
   apply();
 }
 
-// HÀM XUẤT FILE .XLSX CHUẨN MẪU KHÔNG BAO GIỜ BỊ XUẤT THÀNH CSV HAY MỞ DẠNG TEXT
+// HÀM XUẤT FILE .XLSX CHUẨN MẪU HD.XLSX
 function exportExcel() {
   if (!filteredRows.length) return alert('Không có dữ liệu để xuất!');
 
-  // Dữ liệu 2D đúng 100% biểu mẫu HD.xlsx
+  // Bảng dữ liệu đúng 100% biểu mẫu HD.xlsx
   const data = [
     ['Quản lý hợp đồng'],
     [],
@@ -517,31 +517,38 @@ function exportExcel() {
 
   const ws = XLSX.utils.aoa_to_sheet(data);
 
-  // Trộn ô C3:D3 và E3:F3 chuẩn mẫu HD.xlsx
+  // Cấu hình danh sách ô trộn (Merged Cells) chuẩn y hệt file HD.xlsx
   ws['!merges'] = [
-    { s: { r: 2, c: 2 }, e: { r: 2, c: 3 } }, // C3:D3
-    { s: { r: 2, c: 4 }, e: { r: 2, c: 5 } }  // E3:F3
+    { s: { r: 2, c: 0 }, e: { r: 3, c: 0 } }, // A3:A4 (STT)
+    { s: { r: 2, c: 1 }, e: { r: 3, c: 1 } }, // B3:B4 (Tên HD)
+    { s: { r: 2, c: 2 }, e: { r: 2, c: 3 } }, // C3:D3 (Bên cung)
+    { s: { r: 2, c: 4 }, e: { r: 2, c: 5 } }, // E3:F3 (Bên cầu)
+    { s: { r: 2, c: 6 }, e: { r: 3, c: 6 } }, // G3:G4 (Giá trị)
+    { s: { r: 2, c: 7 }, e: { r: 3, c: 7 } }, // H3:H4 (Lĩnh vực)
+    { s: { r: 2, c: 8 }, e: { r: 3, c: 8 } }, // I3:I4 (Loại HD)
+    { s: { r: 2, c: 9 }, e: { r: 3, c: 9 } }, // J3:J4 (Công nghệ)
+    { s: { r: 2, c: 10 }, e: { r: 3, c: 10 } } // K3:K4 (Người quản lý)
   ];
 
-  // Định dạng độ rộng cột
+  // Cấu hình độ rộng các cột
   ws['!cols'] = [
     { wch: 6 },  // STT
-    { wch: 55 }, // Tên HD
-    { wch: 35 }, // Cung
-    { wch: 30 }, // Ký cung
-    { wch: 35 }, // Cầu
-    { wch: 30 }, // Ký cầu
-    { wch: 22 }, // Giá trị
+    { wch: 60 }, // Nội dung/Tên Hợp đồng
+    { wch: 40 }, // Thông tin đơn vị cung - Tên đơn vị
+    { wch: 30 }, // Người ký hợp đồng/ Chức vụ
+    { wch: 40 }, // Thông tin đơn vị cầu - Tên đơn vị
+    { wch: 30 }, // Người ký hợp đồng/ Chức vụ
+    { wch: 22 }, // Giá trị Hợp đồng (VNĐ)
     { wch: 22 }, // Lĩnh vực
-    { wch: 25 }, // Loại HD
-    { wch: 25 }, // Công nghệ
-    { wch: 15 }  // Quản lý
+    { wch: 28 }, // Loại hợp đồng
+    { wch: 28 }, // Công nghệ chiến lược
+    { wch: 15 }  // Người quản lý
   ];
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
   
-  // Tải trực tiếp file Excel đuôi .xlsx về máy
+  // Tải trực tiếp tệp Excel .xlsx thực sự về máy
   XLSX.writeFile(wb, `HD_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
