@@ -9,7 +9,7 @@
 *{box-sizing:border-box}
 body{margin:0;background:#f4f7fb;color:#172033;font-family:'Segoe UI',Arial,sans-serif}
 .header{background:linear-gradient(135deg,#0b3d91,#0b74de);color:white;padding:24px 4vw;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
-.header h1{margin:0 0 6px;font-size:24px}.header p{margin:0;opacity:.9;font-size:14px}
+.header h1{margin:0;font-size:24px}
 .header-actions{display:flex;gap:10px;flex-wrap:wrap}
 .wrap{max-width:1600px;margin:auto;padding:20px}
 .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
@@ -52,7 +52,6 @@ tr:hover td{background:#f8fbff}
 <div class="header">
   <div>
     <h1>📊 DASHBOARD QUẢN LÝ HỢP ĐỒNG</h1>
-    <p>Hệ thống Quản lý, Thêm, Sửa & Xóa Hợp Đồng Trực Tuyến</p>
   </div>
   <div class="header-actions">
     <button class="btn btn-add" onclick="openForm()">➕ Thêm Hợp Đồng</button>
@@ -268,7 +267,6 @@ function render(rs) {
   renderChart('c4', 'bar', Object.keys(d), Object.values(d), 'Số hợp đồng');
 
   document.getElementById('tb').innerHTML = rs.map(r => {
-    // Tìm index gốc trong mảng rows
     const realIndex = rows.findIndex(item => item.STT === r.STT && item['Nội dung/Tên hợp đồng'] === r['Nội dung/Tên hợp đồng']);
     return `
     <tr>
@@ -305,8 +303,6 @@ function apply() {
   );
   render(rs);
 }
-
-// CÁC THAO TÁC CRUD (THÊM, SỬA, XÓA)
 
 function openForm(editIdx = -1) {
   document.getElementById('editIndex').value = editIdx;
@@ -371,7 +367,6 @@ function editContract(idx) {
 function deleteContract(idx) {
   if (confirm(`Bạn có chắc chắn muốn xóa hợp đồng "${rows[idx]['Nội dung/Tên hợp đồng']}"?`)) {
     rows.splice(idx, 1);
-    // Cập nhật lại STT liên tục
     rows.forEach((r, i) => r.STT = i + 1);
     saveData(rows);
     refreshUI();
@@ -425,7 +420,6 @@ function exportCSV() {
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeForm(); });
 
-// Đột phá khởi chạy ban đầu
 refreshUI();
 </script>
 </body>
