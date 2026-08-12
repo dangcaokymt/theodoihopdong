@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dashboard Quản lý Hợp đồng - Clean Data</title>
+<title>Dashboard Quản lý Hợp đồng - Light 3D Hi-Tech</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 *{box-sizing:border-box}
@@ -277,13 +277,11 @@ const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const money = x => new Intl.NumberFormat('vi-VN').format(Number(x || 0)) + ' VNĐ';
 const shortMoney = x => x >= 1e9 ? (x / 1e9).toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' tỷ' : (x / 1e6).toLocaleString('vi-VN', { maximumFractionDigits: 0 }) + ' triệu';
 
-// Bóc tách số tiền thông minh
 function parseMoneySmart(val) {
   if (val === null || val === undefined) return 0;
   let str = val.toString().trim();
   if (!str) return 0;
 
-  // Nếu nhập dạng thập phân đại diện Tỷ (VD: 0.54 hoặc 3.5)
   if (/^\d+(\.\d+)?$/.test(str) && Number(str) < 1000) {
     return Math.round(Number(str) * 1e9);
   }
@@ -292,7 +290,6 @@ function parseMoneySmart(val) {
   return Number(digitsOnly) || 0;
 }
 
-// Chuẩn hóa tên Lĩnh vực và Người quản lý
 function cleanCategory(str, type) {
   if (!str) return 'Chưa phân loại';
   let s = str.toString().trim();
@@ -320,14 +317,20 @@ function parseTSV(text) {
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(delimiter).map(v => v.replace(/^"|"$/g, '').trim());
     
-    // Tự động bỏ qua hàng phụ đề rác (như "Người ký hợp đồng/ Chức vụ", "Tên đơn vị"...)
     let title = cols[1] || cols[0] || '';
-    if (title.toLowerCase().includes('người ký') || title.toLowerCase().includes('chức vụ') || title.toLowerCase().includes('tên đơn vị')) {
+    let cung = cols[2] || '';
+    
+    // LỌC SẠCH DÒNG RÁC:
+    // Bỏ qua nếu dòng quá ngắn, hoặc chứa từ khóa rác của tiêu đề con
+    if (title.length < 3 || 
+        title.toLowerCase().includes('người ký') || 
+        title.toLowerCase().includes('chức vụ') || 
+        cung.toLowerCase().includes('tên đơn vị') ||
+        title.toLowerCase().includes('nội dung/tên hợp đồng')) {
       continue;
     }
 
     let val = parseMoneySmart(cols[6]);
-    // Nếu không khớp cột 6, quét lấy số tiền ở các cột lân cận
     if (val === 0) {
       for (let c = 0; c < cols.length; c++) {
         let v = parseMoneySmart(cols[c]);
@@ -337,7 +340,7 @@ function parseTSV(text) {
 
     parsed.push({
       "STT": validIndex++,
-      "Nội dung/Tên hợp đồng": cols[1] || 'Chưa có tên',
+      "Nội dung/Tên hợp đồng": title,
       "Đơn vị cung": cols[2] || '',
       "Người ký bên cung": cols[3] || '',
       "Đơn vị cầu": cols[4] || '',
