@@ -3,11 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dashboard Quản lý Hợp đồng - Clean Data</title>
+<title>Dashboard Quản lý Hợp đồng - Light 3D Hi-Tech</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Thêm thư viện xuất file Excel .xlsx chuẩn -->
-<script src="https://cdnjs.cloudflare.net/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
-<script src="https://cdnjs.cloudflare.net/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<!-- Thư viện SheetJS tạo file Excel .xlsx chuẩn 100% -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box}
 body{
@@ -487,27 +486,21 @@ function refreshUI() {
   apply();
 }
 
-// XUẤT FILE EXCEL (.XLSX CHUẨN MẪU TỰ ĐỘNG KHÔNG BỊ BÁO CHỮ THÔ)
-async function exportExcel() {
+// HÀM XUẤT FILE .XLSX CHUẨN MẪU KHÔNG BAO GIỜ BỊ XUẤT THÀNH CSV HAY MỞ DẠNG TEXT
+function exportExcel() {
   if (!filteredRows.length) return alert('Không có dữ liệu để xuất!');
-  
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet('Sheet1');
 
-  // Thêm tiêu đề hàng 1, 2, 3, 4 đúng mẫu file HD.xlsx
-  worksheet.addRow(['Quản lý hợp đồng']);
-  worksheet.addRow([]);
-  worksheet.addRow(['STT', 'Nội dung/Tên Hợp đồng', 'Thông tin đơn vị cung', '', 'Thông tin đơn vị cầu', '', 'Giá trị Hợp đồng (VNĐ)', 'Lĩnh vực', 'Loại hợp đồng', 'Công nghệ chiến lược', 'Người quản lý']);
-  worksheet.addRow(['', '', 'Tên đơn vị', 'Người ký hợp đồng/ Chức vụ', 'Tên đơn vị', 'Người ký hợp đồng/ Chức vụ', '', '', '', '', '']);
+  // Dữ liệu 2D đúng 100% biểu mẫu HD.xlsx
+  const data = [
+    ['Quản lý hợp đồng'],
+    [],
+    ['STT', 'Nội dung/Tên Hợp đồng', 'Thông tin đơn vị cung', '', 'Thông tin đơn vị cầu', '', 'Giá trị Hợp đồng (VNĐ)', 'Lĩnh vực', 'Loại hợp đồng', 'Công nghệ chiến lược', 'Người quản lý'],
+    ['', '', 'Tên đơn vị', 'Người ký hợp đồng/ Chức vụ', 'Tên đơn vị', 'Người ký hợp đồng/ Chức vụ', '', '', '', '', '']
+  ];
 
-  // Trộn ô tiêu đề kép chuẩn mẫu HD.xlsx
-  worksheet.mergeCells('C3:D3');
-  worksheet.mergeCells('E3:F3');
-
-  // Đổ dữ liệu từ danh sách
   filteredRows.forEach(r => {
     let valFormatted = new Intl.NumberFormat('vi-VN').format(Number(r['Giá trị hợp đồng'] || 0));
-    worksheet.addRow([
+    data.push([
       r.STT,
       r['Nội dung/Tên hợp đồng'] || '',
       r['Đơn vị cung'] || '',
@@ -522,13 +515,34 @@ async function exportExcel() {
     ]);
   });
 
-  // Tự động căn độ rộng cột chuẩn mắt xem
-  worksheet.columns.forEach((column, i) => {
-    column.width = i === 1 ? 40 : 22;
-  });
+  const ws = XLSX.utils.aoa_to_sheet(data);
 
-  const buffer = await workbook.xlsx.writeBuffer();
-  saveAs(new Blob([buffer]), `HD_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
+  // Trộn ô C3:D3 và E3:F3 chuẩn mẫu HD.xlsx
+  ws['!merges'] = [
+    { s: { r: 2, c: 2 }, e: { r: 2, c: 3 } }, // C3:D3
+    { s: { r: 2, c: 4 }, e: { r: 2, c: 5 } }  // E3:F3
+  ];
+
+  // Định dạng độ rộng cột
+  ws['!cols'] = [
+    { wch: 6 },  // STT
+    { wch: 55 }, // Tên HD
+    { wch: 35 }, // Cung
+    { wch: 30 }, // Ký cung
+    { wch: 35 }, // Cầu
+    { wch: 30 }, // Ký cầu
+    { wch: 22 }, // Giá trị
+    { wch: 22 }, // Lĩnh vực
+    { wch: 25 }, // Loại HD
+    { wch: 25 }, // Công nghệ
+    { wch: 15 }  // Quản lý
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+  
+  // Tải trực tiếp file Excel đuôi .xlsx về máy
+  XLSX.writeFile(wb, `HD_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 ['q', 'f', 't', 'm', 's'].forEach(id => document.addEventListener('input', apply));
