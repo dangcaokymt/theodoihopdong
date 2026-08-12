@@ -5,9 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Dashboard Quản lý Hợp đồng - Light 3D Hi-Tech</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Thư viện ExcelJS định dạng phông chữ, cỡ chữ, viền ô Excel chuẩn 100% -->
-<script src="https://cdnjs.cloudflare.net/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
-<script src="https://cdnjs.cloudflare.net/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<!-- Thư viện ExcelJS xuất định dạng Font, Border, Wrap Text, Alignment chuẩn 100% -->
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
 <style>
 *{box-sizing:border-box}
 body{
@@ -487,105 +486,118 @@ function refreshUI() {
   apply();
 }
 
-// XUẤT FILE .XLSX ĐÚNG 100% ĐỊNH DẠNG HD.XLSX (PHÔNG TIMES NEW ROMAN, BORDER KẺ KHUNG, CỠ CHỮ, MERGE ô)
+// HÀM XUẤT EXCEL CHUẨN ĐỊNH DẠNG KHÔNG BỊ LỖI
 async function exportExcel() {
   if (!filteredRows.length) return alert('Không có dữ liệu để xuất!');
   
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet('Sheet1');
+  try {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Sheet1');
 
-  // Đặt độ rộng các cột đúng theo HD.xlsx
-  worksheet.columns = [
-    { width: 7.5 },  // A: STT
-    { width: 45 },   // B: Tên HĐ
-    { width: 42 },   // C: Cung - Đơn vị
-    { width: 35 },   // D: Cung - Ký
-    { width: 42 },   // E: Cầu - Đơn vị
-    { width: 35 },   // F: Cầu - Ký
-    { width: 25 },   // G: Giá trị (VNĐ)
-    { width: 26 },   // H: Lĩnh vực
-    { width: 32 },   // I: Loại HĐ
-    { width: 28 },   // J: Công nghệ chiến lược
-    { width: 20 }    // K: Người quản lý
-  ];
+    const thinBorder = {
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' }
+    };
 
-  // Kiểu đường viền đen mảnh chuẩn Excel
-  const thinBorder = {
-    top: { style: 'thin' },
-    left: { style: 'thin' },
-    bottom: { style: 'thin' },
-    right: { style: 'thin' }
-  };
+    worksheet.columns = [
+      { width: 7.5 },  // A: STT
+      { width: 45 },   // B: Tên HĐ
+      { width: 38 },   // C: Cung - Đơn vị
+      { width: 35 },   // D: Cung - Ký
+      { width: 42 },   // E: Cầu - Đơn vị
+      { width: 30 },   // F: Cầu - Ký
+      { width: 24 },   // G: Giá trị (VNĐ)
+      { width: 25 },   // H: Lĩnh vực
+      { width: 30 },   // I: Loại HĐ
+      { width: 28 },   // J: Công nghệ chiến lược
+      { width: 20 }    // K: Người quản lý
+    ];
 
-  // Hàng 1: Tiêu đề "Quản lý hợp đồng"
-  const row1 = worksheet.addRow(['Quản lý hợp đồng']);
-  row1.getCell(1).font = { name: 'Times New Roman', size: 11, bold: true };
+    // Hàng 1
+    const row1 = worksheet.addRow(['Quản lý hợp đồng']);
+    const cellA1 = row1.getCell(1);
+    cellA1.font = { name: 'Times New Roman', size: 11, bold: true };
+    cellA1.border = thinBorder;
 
-  // Hàng 2: Trống
-  worksheet.addRow([]);
+    // Hàng 2: Trống
+    worksheet.addRow([]);
 
-  // Hàng 3 & 4: Tiêu đề 2 tầng
-  const row3 = worksheet.addRow(['STT', 'Nội dung/Tên Hợp đồng', 'Thông tin đơn vị cung', '', 'Thông tin đơn vị cầu', '', 'Giá trị Hợp đồng (VNĐ)', 'Lĩnh vực', 'Loại hợp đồng', 'Công nghệ chiến lược', 'Người quản lý']);
-  const row4 = worksheet.addRow(['', '', 'Tên đơn vị', 'Người ký hợp đồng/ Chức vụ', 'Tên đơn vị', 'Người ký hợp đồng/ Chức vụ', '', '', '', '', '']);
+    // Hàng 3 & 4: Tiêu đề 2 tầng
+    const row3 = worksheet.addRow(['STT', 'Nội dung/Tên Hợp đồng', 'Thông tin đơn vị cung', '', 'Thông tin đơn vị cầu', '', 'Giá trị Hợp đồng (VNĐ)', 'Lĩnh vực', 'Loại hợp đồng', 'Công nghệ chiến lược', 'Người quản lý']);
+    const row4 = worksheet.addRow(['', '', 'Tên đơn vị', 'Người ký hợp đồng/ Chức vụ', 'Tên đơn vị', 'Người ký hợp đồng/ Chức vụ', '', '', '', '', '']);
 
-  row3.height = 20;
-  row4.height = 38;
+    row3.height = 20;
+    row4.height = 38;
 
-  // Gộp ô (Merge Cells) đúng chuẩn 100% file HD.xlsx
-  worksheet.mergeCells('A3:A4');
-  worksheet.mergeCells('B3:B4');
-  worksheet.mergeCells('C3:D3');
-  worksheet.mergeCells('E3:F3');
-  worksheet.mergeCells('G3:G4');
-  worksheet.mergeCells('H3:H4');
-  worksheet.mergeCells('I3:I4');
-  worksheet.mergeCells('J3:J4');
-  worksheet.mergeCells('K3:K4');
+    worksheet.mergeCells('A3:A4');
+    worksheet.mergeCells('B3:B4');
+    worksheet.mergeCells('C3:D3');
+    worksheet.mergeCells('E3:F3');
+    worksheet.mergeCells('G3:G4');
+    worksheet.mergeCells('H3:H4');
+    worksheet.mergeCells('I3:I4');
+    worksheet.mergeCells('J3:J4');
+    worksheet.mergeCells('K3:K4');
 
-  // Định dạng phông Times New Roman 14pt BOLD cho tiêu đề bảng
-  for (let r = 3; r <= 4; r++) {
-    const row = worksheet.getRow(r);
-    row.eachCell({ includeEmpty: true }, (cell) => {
-      cell.font = { name: 'Times New Roman', size: 14, bold: true };
-      cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
-      cell.border = thinBorder;
-    });
-  }
-
-  // Đổ dữ liệu nội dung từ hàng 5
-  filteredRows.forEach(r => {
-    let valFormatted = new Intl.NumberFormat('vi-VN').format(Number(r['Giá trị hợp đồng'] || 0));
-    const dataRow = worksheet.addRow([
-      r.STT,
-      r['Nội dung/Tên hợp đồng'] || '',
-      r['Đơn vị cung'] || '',
-      r['Người ký bên cung'] || '',
-      r['Đơn vị cầu'] || '',
-      r['Người ký bên cầu'] || '',
-      valFormatted,
-      r['Lĩnh vực'] || '',
-      r['Loại hợp đồng'] || '',
-      r['Công nghệ chiến lược'] || '',
-      r['Người quản lý'] || ''
-    ]);
-
-    // Định dạng phông Times New Roman 14pt Regular + Kẻ khung + Căn lề chuẩn cho từng ô dữ liệu
-    dataRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-      cell.font = { name: 'Times New Roman', size: 14, bold: false };
-      cell.border = thinBorder;
-      
-      // Căn giữa cho STT và Giá trị hợp đồng, còn lại căn trái
-      if (colNumber === 1 || colNumber === 7) {
+    for (let r = 3; r <= 4; r++) {
+      const row = worksheet.getRow(r);
+      for (let c = 1; c <= 11; c++) {
+        const cell = row.getCell(c);
+        cell.font = { name: 'Times New Roman', size: 14, bold: true };
         cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
-      } else {
-        cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+        cell.border = thinBorder;
       }
-    });
-  });
+    }
 
-  // Tải file .xlsx về máy
-  const buffer = await workbook.xlsx.writeBuffer();
-  saveAs(new Blob([buffer]), `HD_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
+    filteredRows.forEach(r => {
+      let valFormatted = new Intl.NumberFormat('vi-VN').format(Number(r['Giá trị hợp đồng'] || 0));
+      const dataRow = worksheet.addRow([
+        r.STT,
+        r['Nội dung/Tên hợp đồng'] || '',
+        r['Đơn vị cung'] || '',
+        r['Người ký bên cung'] || '',
+        r['Đơn vị cầu'] || '',
+        r['Người ký bên cầu'] || '',
+        valFormatted,
+        r['Lĩnh vực'] || '',
+        r['Loại hợp đồng'] || '',
+        r['Công nghệ chiến lược'] || '',
+        r['Người quản lý'] || ''
+      ]);
+
+      dataRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        cell.font = { name: 'Times New Roman', size: 14, bold: false };
+        cell.border = thinBorder;
+        
+        if (colNumber === 1 || colNumber === 7) {
+          cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+        } else {
+          cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+        }
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `HD_Export_${new Date().toISOString().slice(0,10)}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    
+    setTimeout(() => {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 100);
+
+  } catch (err) {
+    console.error("Lỗi xuất Excel:", err);
+    alert("Có lỗi xảy ra khi tạo file Excel. Vui lòng thử lại!");
+  }
 }
 
 ['q', 'f', 't', 'm', 's'].forEach(id => document.addEventListener('input', apply));
