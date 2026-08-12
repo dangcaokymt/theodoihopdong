@@ -317,17 +317,13 @@ function parseTSV(text) {
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(delimiter).map(v => v.replace(/^"|"$/g, '').trim());
     
-    let col0 = cols[0] || '';
-    let col1 = cols[1] || '';
-    let col2 = cols[2] || '';
-
-    // LỌC SẠCH DÒNG TIÊU ĐỀ PHỤ / DÒNG RÁC:
-    const fullRowText = cols.join(' ').toLowerCase();
-    if (fullRowText.includes('người ký') || 
-        fullRowText.includes('chức vụ') || 
-        fullRowText.includes('tên đơn vị') || 
-        fullRowText.includes('nội dung/tên hợp đồng') ||
-        (!/^\d+$/.test(col0) && col1.toLowerCase().includes('người ký'))) {
+    let title = cols[1] || cols[0] || '';
+    let cung = cols[2] || '';
+    
+    // CHỈ LỌC BỎ DUY NHẤT HÀNG TIÊU ĐỀ PHỤ
+    if (title.toLowerCase().includes('người ký hợp đồng') || 
+        cung.toLowerCase().includes('tên đơn vị') || 
+        title.toLowerCase().includes('nội dung/tên hợp đồng')) {
       continue;
     }
 
@@ -339,11 +335,11 @@ function parseTSV(text) {
       }
     }
 
-    // Chỉ lấy dòng có tên hợp đồng hợp lệ
-    if (col1.length >= 3 && val > 0) {
+    // Nhận tất cả hợp đồng có tên dài từ 2 ký tự trở lên
+    if (title.length >= 2) {
       parsed.push({
         "STT": validIndex++,
-        "Nội dung/Tên hợp đồng": col1,
+        "Nội dung/Tên hợp đồng": title,
         "Đơn vị cung": cols[2] || '',
         "Người ký bên cung": cols[3] || '',
         "Đơn vị cầu": cols[4] || '',
