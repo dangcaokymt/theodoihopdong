@@ -317,11 +317,20 @@ function parseTSV(text) {
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(delimiter).map(v => v.replace(/^"|"$/g, '').trim());
     
-    let title = cols[1] || cols[0] || '';
-    let cung = cols[2] || '';
-    
-    // BỘ LỌC DÒNG RÁC NGHIÊM NGẶT:
-    // Bỏ qua nếu là tiêu đề con, rác hoặc dòng không có số tiền giá trị hợp lệ
+    let col0 = cols[0] || '';
+    let col1 = cols[1] || '';
+    let col2 = cols[2] || '';
+
+    // LỌC SẠCH DÒNG TIÊU ĐỀ PHỤ / DÒNG RÁC:
+    const fullRowText = cols.join(' ').toLowerCase();
+    if (fullRowText.includes('người ký') || 
+        fullRowText.includes('chức vụ') || 
+        fullRowText.includes('tên đơn vị') || 
+        fullRowText.includes('nội dung/tên hợp đồng') ||
+        (!/^\d+$/.test(col0) && col1.toLowerCase().includes('người ký'))) {
+      continue;
+    }
+
     let val = parseMoneySmart(cols[6]);
     if (val === 0) {
       for (let c = 0; c < cols.length; c++) {
@@ -330,28 +339,22 @@ function parseTSV(text) {
       }
     }
 
-    if (title.length < 3 || 
-        val === 0 ||
-        title.toLowerCase().includes('người ký') || 
-        title.toLowerCase().includes('chức vụ') || 
-        cung.toLowerCase().includes('tên đơn vị') ||
-        title.toLowerCase().includes('nội dung/tên hợp đồng')) {
-      continue;
+    // Chỉ lấy dòng có tên hợp đồng hợp lệ
+    if (col1.length >= 3 && val > 0) {
+      parsed.push({
+        "STT": validIndex++,
+        "Nội dung/Tên hợp đồng": col1,
+        "Đơn vị cung": cols[2] || '',
+        "Người ký bên cung": cols[3] || '',
+        "Đơn vị cầu": cols[4] || '',
+        "Người ký bên cầu": cols[5] || '',
+        "Giá trị hợp đồng": val,
+        "Lĩnh vực": cleanCategory(cols[7], 'linhvuc'),
+        "Loại hợp đồng": cols[8] || 'Chưa phân loại',
+        "Công nghệ chiến lược": cols[9] || 'Chưa phân loại',
+        "Người quản lý": cleanCategory(cols[10], 'quanly')
+      });
     }
-
-    parsed.push({
-      "STT": validIndex++,
-      "Nội dung/Tên hợp đồng": title,
-      "Đơn vị cung": cols[2] || '',
-      "Người ký bên cung": cols[3] || '',
-      "Đơn vị cầu": cols[4] || '',
-      "Người ký bên cầu": cols[5] || '',
-      "Giá trị hợp đồng": val,
-      "Lĩnh vực": cleanCategory(cols[7], 'linhvuc'),
-      "Loại hợp đồng": cols[8] || 'Chưa phân loại',
-      "Công nghệ chiến lược": cols[9] || 'Chưa phân loại',
-      "Người quản lý": cleanCategory(cols[10], 'quanly')
-    });
   }
 
   return parsed;
@@ -361,7 +364,6 @@ async function fetchSheetData() {
   const loading = document.getElementById('loading-indicator');
   loading.style.display = 'inline';
   
-  // Thêm random token để xóa bộ nhớ đệm (Clear Cache) hoàn toàn
   const targetUrl = SHEET_URL + '&nocache=' + Math.random();
   const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
 
