@@ -3,8 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dashboard Quản lý Hợp đồng - Light 3D Hi-Tech</title>
+<title>Dashboard Quản lý Hợp đồng - Clean Data</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Thêm thư viện xuất file Excel .xlsx chuẩn -->
+<script src="https://cdnjs.cloudflare.net/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.net/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <style>
 *{box-sizing:border-box}
 body{
@@ -204,7 +207,7 @@ tr:hover td{ background: #f0f9ff; }
   <div class="header-actions">
     <span id="loading-indicator">🔄 Đang đồng bộ...</span>
     <button class="btn btn-refresh" onclick="fetchSheetData()">🔄 Cập nhật Dữ liệu</button>
-    <button class="btn btn-export" onclick="exportCSV()">📥 Xuất Excel/CSV</button>
+    <button class="btn btn-export" onclick="exportExcel()">📥 Xuất File Excel (.xlsx)</button>
   </div>
 </div>
 
@@ -484,40 +487,48 @@ function refreshUI() {
   apply();
 }
 
-// XUẤT FILE KHỚP 100% BẢNG MẪU MẮT THẤY TRONG HD.XLSX
-function exportCSV() {
+// XUẤT FILE EXCEL (.XLSX CHUẨN MẪU TỰ ĐỘNG KHÔNG BỊ BÁO CHỮ THÔ)
+async function exportExcel() {
   if (!filteredRows.length) return alert('Không có dữ liệu để xuất!');
   
-  let csvRows = [
-    '"Quản lý hợp đồng",,,,,,,,,,',
-    ',,,,,,,,,,,',
-    '"STT","Nội dung/Tên Hợp đồng","Thông tin đơn vị cung","","Thông tin đơn vị cầu","","Giá trị Hợp đồng (VNĐ)","Lĩnh vực","Loại hợp đồng","Công nghệ chiến lược","Người quản lý"',
-    '"","","Tên đơn vị","Người ký hợp đồng/ Chức vụ","Tên đơn vị","Người ký hợp đồng/ Chức vụ","","","","",""'
-  ];
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Sheet1');
 
+  // Thêm tiêu đề hàng 1, 2, 3, 4 đúng mẫu file HD.xlsx
+  worksheet.addRow(['Quản lý hợp đồng']);
+  worksheet.addRow([]);
+  worksheet.addRow(['STT', 'Nội dung/Tên Hợp đồng', 'Thông tin đơn vị cung', '', 'Thông tin đơn vị cầu', '', 'Giá trị Hợp đồng (VNĐ)', 'Lĩnh vực', 'Loại hợp đồng', 'Công nghệ chiến lược', 'Người quản lý']);
+  worksheet.addRow(['', '', 'Tên đơn vị', 'Người ký hợp đồng/ Chức vụ', 'Tên đơn vị', 'Người ký hợp đồng/ Chức vụ', '', '', '', '', '']);
+
+  // Trộn ô tiêu đề kép chuẩn mẫu HD.xlsx
+  worksheet.mergeCells('C3:D3');
+  worksheet.mergeCells('E3:F3');
+
+  // Đổ dữ liệu từ danh sách
   filteredRows.forEach(r => {
     let valFormatted = new Intl.NumberFormat('vi-VN').format(Number(r['Giá trị hợp đồng'] || 0));
-    let row = [
+    worksheet.addRow([
       r.STT,
-      `"${(r['Nội dung/Tên hợp đồng'] || '').replace(/"/g, '""')}"`,
-      `"${(r['Đơn vị cung'] || '').replace(/"/g, '""')}"`,
-      `"${(r['Người ký bên cung'] || '').replace(/"/g, '""')}"`,
-      `"${(r['Đơn vị cầu'] || '').replace(/"/g, '""')}"`,
-      `"${(r['Người ký bên cầu'] || '').replace(/"/g, '""')}"`,
-      `"${valFormatted}"`,
-      `"${(r['Lĩnh vực'] || '').replace(/"/g, '""')}"`,
-      `"${(r['Loại hợp đồng'] || '').replace(/"/g, '""')}"`,
-      `"${(r['Công nghệ chiến lược'] || '').replace(/"/g, '""')}"`,
-      `"${(r['Người quản lý'] || '').replace(/"/g, '""')}"`
-    ];
-    csvRows.push(row.join(','));
+      r['Nội dung/Tên hợp đồng'] || '',
+      r['Đơn vị cung'] || '',
+      r['Người ký bên cung'] || '',
+      r['Đơn vị cầu'] || '',
+      r['Người ký bên cầu'] || '',
+      valFormatted,
+      r['Lĩnh vực'] || '',
+      r['Loại hợp đồng'] || '',
+      r['Công nghệ chiến lược'] || '',
+      r['Người quản lý'] || ''
+    ]);
   });
 
-  let blob = new Blob(["\ufeff" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-  let link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `HD_Export_${new Date().toISOString().slice(0,10)}.csv`;
-  link.click();
+  // Tự động căn độ rộng cột chuẩn mắt xem
+  worksheet.columns.forEach((column, i) => {
+    column.width = i === 1 ? 40 : 22;
+  });
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  saveAs(new Blob([buffer]), `HD_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 ['q', 'f', 't', 'm', 's'].forEach(id => document.addEventListener('input', apply));
