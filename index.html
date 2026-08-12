@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dashboard Quản lý Hợp đồng - Tự động đồng bộ Google Sheets</title>
+<title>Dashboard Quản lý Hợp đồng - Light 3D Hi-Tech</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 *{box-sizing:border-box}
@@ -38,7 +38,7 @@ body{
   letter-spacing: 0.5px;
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-.header-actions{display:flex;gap:12px;flex-wrap:wrap}
+.header-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 
 .wrap{max-width:1650px;margin:auto;padding:24px 20px}
 
@@ -186,7 +186,7 @@ tr:hover td{ background: #f0f9ff; }
 .table{overflow:auto;max-height:600px}
 #loading-indicator {
   display: none;
-  color: #0284c7;
+  color: #ffffff;
   font-weight: bold;
   font-size: 13px;
 }
@@ -264,7 +264,6 @@ tr:hover td{ background: #f0f9ff; }
 </div>
 
 <script>
-// Cấu hình Chart.js
 Chart.defaults.color = '#64748b';
 Chart.defaults.borderColor = '#e2e8f0';
 
@@ -279,7 +278,36 @@ const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const money = x => new Intl.NumberFormat('vi-VN').format(Number(x || 0)) + ' VNĐ';
 const shortMoney = x => x >= 1e9 ? (x / 1e9).toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' tỷ' : (x / 1e6).toLocaleString('vi-VN', { maximumFractionDigits: 0 }) + ' triệu';
 
-// Phân tích dữ liệu TSV / CSV thành Mảng Object
+// Hàm làm sạch và ép số tiền an toàn tuyệt đối
+function parseMoney(val) {
+  if (!val) return 0;
+  let str = val.toString().trim();
+  // Nếu số dạng thập phân tỷ VNĐ (Ví dụ: 0.54 hay 3.5)
+  if (/^\d+(\.\d+)?$/.test(str) && Number(str) < 1000) {
+    return Math.round(Number(str) * 1e9);
+  }
+  // Bỏ toàn bộ ký tự không phải là số
+  let clean = str.replace(/[^0-9]/g, '');
+  return Number(clean) || 0;
+}
+
+// Chuẩn hóa tên lĩnh vực & người quản lý tránh bị trùng lặp do gõ sai
+function cleanCategory(str, type) {
+  if (!str) return 'Chưa phân loại';
+  let s = str.toString().trim();
+  if (type === 'linhvuc') {
+    if (s.includes('Thực phẩn')) return 'Công nghệ thực phẩm';
+    if (s.includes('chế toạ')) return 'Cơ khí, chế tạo máy';
+  }
+  if (type === 'quanly') {
+    if (/^(T\.?\s*Nguyên|A\s*Nguyên|Nguyên)$/i.test(s)) return 'A. Nguyên';
+    if (/^(T\.?\s*Trang)$/i.test(s)) return 'T. Trang';
+    if (/^(D\.?\s*Trang)$/i.test(s)) return 'D. Trang';
+    if (/^(H\.?\s*Lương)$/i.test(s)) return 'H. Lương';
+  }
+  return s;
+}
+
 function parseTSV(text) {
   const lines = text.trim().split('\n').map(l => l.trim()).filter(Boolean);
   if (!lines.length) return [];
@@ -292,8 +320,9 @@ function parseTSV(text) {
     let obj = {};
     headers.forEach((h, i) => { obj[h] = values[i] || ''; });
     
-    // Chuẩn hóa tên cột & kiểu dữ liệu
-    const valStr = (obj['Giá trị hợp đồng'] || obj['Giá trị'] || '0').replace(/[^0-9]/g, '');
+    // Tìm cột giá trị hợp đồng chính xác
+    let rawVal = obj['Giá trị hợp đồng'] || obj['Giá trị (VNĐ)'] || obj['Giá trị'] || '0';
+    
     return {
       "STT": parseInt(obj['STT']) || (idx + 1),
       "Nội dung/Tên hợp đồng": obj['Nội dung/Tên hợp đồng'] || obj['Tên hợp đồng'] || 'Chưa có tên',
@@ -301,27 +330,35 @@ function parseTSV(text) {
       "Người ký bên cung": obj['Người ký bên cung'] || '',
       "Đơn vị cầu": obj['Đơn vị cầu'] || '',
       "Người ký bên cầu": obj['Người ký bên cầu'] || '',
-      "Giá trị hợp đồng": Number(valStr) || 0,
-      "Lĩnh vực": obj['Lĩnh vực'] || 'Chưa phân loại',
+      "Giá trị hợp đồng": parseMoney(rawVal),
+      "Lĩnh vực": cleanCategory(obj['Lĩnh vực'], 'linhvuc'),
       "Loại hợp đồng": obj['Loại hợp đồng'] || 'Chưa phân loại',
       "Công nghệ chiến lược": obj['Công nghệ chiến lược'] || 'Chưa phân loại',
-      "Người quản lý": obj['Người quản lý'] || 'Chưa phân loại'
+      "Người quản lý": cleanCategory(obj['Người quản lý'], 'quanly')
     };
   });
 }
 
-// Gọi API tự động tải dữ liệu từ Google Sheets
 async function fetchSheetData() {
   const loading = document.getElementById('loading-indicator');
   loading.style.display = 'inline';
+  
+  const targetUrl = SHEET_URL + '&t=' + new Date().getTime();
+  const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
+
   try {
-    const res = await fetch(SHEET_URL + '&t=' + new Date().getTime());
-    const text = await res.text();
+    let response;
+    try {
+      response = await fetch(targetUrl);
+    } catch (e) {
+      response = await fetch(proxyUrl);
+    }
+    const text = await response.text();
     rows = parseTSV(text);
     refreshUI();
   } catch (err) {
-    console.error("Lỗi khi kết nối Google Sheets:", err);
-    alert("Không thể tải dữ liệu từ Google Sheets. Vui lòng kiểm tra lại kết nối mạng!");
+    console.error("Lỗi đồng bộ:", err);
+    alert("Không thể kết nối đến Google Sheets!");
   } finally {
     loading.style.display = 'none';
   }
@@ -461,9 +498,8 @@ function exportCSV() {
   link.click();
 }
 
-['q', 'f', 't', 'm', 's'].forEach(id => document.getElementById(id).addEventListener('input', apply));
+['q', 'f', 't', 'm', 's'].forEach(id => document.addEventListener('input', apply));
 
-// Khởi chạy đồng bộ ngay khi load trang
 fetchSheetData();
 </script>
 </body>
