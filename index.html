@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Dashboard Quản lý Hợp đồng - Light 3D Hi-Tech</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Thư viện SheetJS tạo file Excel .xlsx chuẩn 100% -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- Thư viện ExcelJS định dạng phông chữ, cỡ chữ, viền ô Excel chuẩn 100% -->
+<script src="https://cdnjs.cloudflare.net/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.net/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <style>
 *{box-sizing:border-box}
 body{
@@ -486,21 +487,75 @@ function refreshUI() {
   apply();
 }
 
-// HÀM XUẤT FILE .XLSX CHUẨN MẪU HD.XLSX
-function exportExcel() {
+// XUẤT FILE .XLSX ĐÚNG 100% ĐỊNH DẠNG HD.XLSX (PHÔNG TIMES NEW ROMAN, BORDER KẺ KHUNG, CỠ CHỮ, MERGE ô)
+async function exportExcel() {
   if (!filteredRows.length) return alert('Không có dữ liệu để xuất!');
+  
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Sheet1');
 
-  // Bảng dữ liệu đúng 100% biểu mẫu HD.xlsx
-  const data = [
-    ['Quản lý hợp đồng'],
-    [],
-    ['STT', 'Nội dung/Tên Hợp đồng', 'Thông tin đơn vị cung', '', 'Thông tin đơn vị cầu', '', 'Giá trị Hợp đồng (VNĐ)', 'Lĩnh vực', 'Loại hợp đồng', 'Công nghệ chiến lược', 'Người quản lý'],
-    ['', '', 'Tên đơn vị', 'Người ký hợp đồng/ Chức vụ', 'Tên đơn vị', 'Người ký hợp đồng/ Chức vụ', '', '', '', '', '']
+  // Đặt độ rộng các cột đúng theo HD.xlsx
+  worksheet.columns = [
+    { width: 7.5 },  // A: STT
+    { width: 45 },   // B: Tên HĐ
+    { width: 42 },   // C: Cung - Đơn vị
+    { width: 35 },   // D: Cung - Ký
+    { width: 42 },   // E: Cầu - Đơn vị
+    { width: 35 },   // F: Cầu - Ký
+    { width: 25 },   // G: Giá trị (VNĐ)
+    { width: 26 },   // H: Lĩnh vực
+    { width: 32 },   // I: Loại HĐ
+    { width: 28 },   // J: Công nghệ chiến lược
+    { width: 20 }    // K: Người quản lý
   ];
 
+  // Kiểu đường viền đen mảnh chuẩn Excel
+  const thinBorder = {
+    top: { style: 'thin' },
+    left: { style: 'thin' },
+    bottom: { style: 'thin' },
+    right: { style: 'thin' }
+  };
+
+  // Hàng 1: Tiêu đề "Quản lý hợp đồng"
+  const row1 = worksheet.addRow(['Quản lý hợp đồng']);
+  row1.getCell(1).font = { name: 'Times New Roman', size: 11, bold: true };
+
+  // Hàng 2: Trống
+  worksheet.addRow([]);
+
+  // Hàng 3 & 4: Tiêu đề 2 tầng
+  const row3 = worksheet.addRow(['STT', 'Nội dung/Tên Hợp đồng', 'Thông tin đơn vị cung', '', 'Thông tin đơn vị cầu', '', 'Giá trị Hợp đồng (VNĐ)', 'Lĩnh vực', 'Loại hợp đồng', 'Công nghệ chiến lược', 'Người quản lý']);
+  const row4 = worksheet.addRow(['', '', 'Tên đơn vị', 'Người ký hợp đồng/ Chức vụ', 'Tên đơn vị', 'Người ký hợp đồng/ Chức vụ', '', '', '', '', '']);
+
+  row3.height = 20;
+  row4.height = 38;
+
+  // Gộp ô (Merge Cells) đúng chuẩn 100% file HD.xlsx
+  worksheet.mergeCells('A3:A4');
+  worksheet.mergeCells('B3:B4');
+  worksheet.mergeCells('C3:D3');
+  worksheet.mergeCells('E3:F3');
+  worksheet.mergeCells('G3:G4');
+  worksheet.mergeCells('H3:H4');
+  worksheet.mergeCells('I3:I4');
+  worksheet.mergeCells('J3:J4');
+  worksheet.mergeCells('K3:K4');
+
+  // Định dạng phông Times New Roman 14pt BOLD cho tiêu đề bảng
+  for (let r = 3; r <= 4; r++) {
+    const row = worksheet.getRow(r);
+    row.eachCell({ includeEmpty: true }, (cell) => {
+      cell.font = { name: 'Times New Roman', size: 14, bold: true };
+      cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+      cell.border = thinBorder;
+    });
+  }
+
+  // Đổ dữ liệu nội dung từ hàng 5
   filteredRows.forEach(r => {
     let valFormatted = new Intl.NumberFormat('vi-VN').format(Number(r['Giá trị hợp đồng'] || 0));
-    data.push([
+    const dataRow = worksheet.addRow([
       r.STT,
       r['Nội dung/Tên hợp đồng'] || '',
       r['Đơn vị cung'] || '',
@@ -513,43 +568,24 @@ function exportExcel() {
       r['Công nghệ chiến lược'] || '',
       r['Người quản lý'] || ''
     ]);
+
+    // Định dạng phông Times New Roman 14pt Regular + Kẻ khung + Căn lề chuẩn cho từng ô dữ liệu
+    dataRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+      cell.font = { name: 'Times New Roman', size: 14, bold: false };
+      cell.border = thinBorder;
+      
+      // Căn giữa cho STT và Giá trị hợp đồng, còn lại căn trái
+      if (colNumber === 1 || colNumber === 7) {
+        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+      } else {
+        cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+      }
+    });
   });
 
-  const ws = XLSX.utils.aoa_to_sheet(data);
-
-  // Cấu hình danh sách ô trộn (Merged Cells) chuẩn y hệt file HD.xlsx
-  ws['!merges'] = [
-    { s: { r: 2, c: 0 }, e: { r: 3, c: 0 } }, // A3:A4 (STT)
-    { s: { r: 2, c: 1 }, e: { r: 3, c: 1 } }, // B3:B4 (Tên HD)
-    { s: { r: 2, c: 2 }, e: { r: 2, c: 3 } }, // C3:D3 (Bên cung)
-    { s: { r: 2, c: 4 }, e: { r: 2, c: 5 } }, // E3:F3 (Bên cầu)
-    { s: { r: 2, c: 6 }, e: { r: 3, c: 6 } }, // G3:G4 (Giá trị)
-    { s: { r: 2, c: 7 }, e: { r: 3, c: 7 } }, // H3:H4 (Lĩnh vực)
-    { s: { r: 2, c: 8 }, e: { r: 3, c: 8 } }, // I3:I4 (Loại HD)
-    { s: { r: 2, c: 9 }, e: { r: 3, c: 9 } }, // J3:J4 (Công nghệ)
-    { s: { r: 2, c: 10 }, e: { r: 3, c: 10 } } // K3:K4 (Người quản lý)
-  ];
-
-  // Cấu hình độ rộng các cột
-  ws['!cols'] = [
-    { wch: 6 },  // STT
-    { wch: 60 }, // Nội dung/Tên Hợp đồng
-    { wch: 40 }, // Thông tin đơn vị cung - Tên đơn vị
-    { wch: 30 }, // Người ký hợp đồng/ Chức vụ
-    { wch: 40 }, // Thông tin đơn vị cầu - Tên đơn vị
-    { wch: 30 }, // Người ký hợp đồng/ Chức vụ
-    { wch: 22 }, // Giá trị Hợp đồng (VNĐ)
-    { wch: 22 }, // Lĩnh vực
-    { wch: 28 }, // Loại hợp đồng
-    { wch: 28 }, // Công nghệ chiến lược
-    { wch: 15 }  // Người quản lý
-  ];
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-  
-  // Tải trực tiếp tệp Excel .xlsx thực sự về máy
-  XLSX.writeFile(wb, `HD_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
+  // Tải file .xlsx về máy
+  const buffer = await workbook.xlsx.writeBuffer();
+  saveAs(new Blob([buffer]), `HD_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 ['q', 'f', 't', 'm', 's'].forEach(id => document.addEventListener('input', apply));
