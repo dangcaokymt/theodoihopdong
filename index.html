@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard Quản lý Hợp đồng - Clean Data</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f7fb;color:#172033;font-family:'Segoe UI',Arial,sans-serif}
+.header{background:linear-gradient(135deg,#0b3d91,#0b74de);color:white;padding:24px 4vw;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.header h1{margin:0 0 6px;font-size:24px}.header p{margin:0;opacity:.9;font-size:14px}
+.wrap{max-width:1600px;margin:auto;padding:20px}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+.card{background:white;border:1px solid #e5eaf1;border-radius:12px;padding:16px;box-shadow:0 3px 12px #1428500d}
+.label{font-size:11px;color:#6b7280;font-weight:700;text-transform:uppercase}.kpi{font-size:22px;font-weight:800;margin-top:6px;color:#0b3d91}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.chart{height:300px;position:relative}
+.filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:12px}
+input,select,button{width:100%;padding:10px 12px;border:1px solid #d9e0ea;border-radius:8px;background:white;font-size:13px}
+.btn-export{background:#107c41;color:white;font-weight:bold;border:none;cursor:pointer;padding:10px 18px;border-radius:8px}
+.btn-export:hover{background:#0b5c30}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{padding:10px 12px;border-bottom:1px solid #e5eaf1;text-align:left;font-size:13px}
+th{background:#f7f9fc;position:sticky;top:0;z-index:1}
+tr:hover td{background:#f8fbff;cursor:pointer}
+.badge{padding:4px 8px;border-radius:999px;background:#eaf3ff;color:#075bb0;font-weight:700;font-size:11px;display:inline-block}
+.badge-tech{padding:4px 8px;border-radius:6px;background:#f0fdf4;color:#15803d;font-weight:600;font-size:11px;border:1px solid #bbf7d0;display:inline-block}
+.table{overflow:auto;max-height:600px}
+.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;padding:20px;z-index:100}
+.modal.show{display:flex}
+.modalbox{background:white;max-width:850px;width:100%;max-height:90vh;overflow:auto;border-radius:14px;padding:24px;position:relative}
+.close-btn{position:absolute;top:15px;right:15px;border:none;background:#f1f5f9;font-weight:bold;cursor:pointer;border-radius:50%;width:32px;height:32px;font-size:16px}
+.details{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.detail{border:1px solid #e5eaf1;border-radius:8px;padding:12px;background:#fafbfc}
+.detail b{display:block;color:#6b7280;font-size:11px;margin-bottom:4px}
+@media(max-width:1200px){.grid{grid-template-columns:repeat(3,1fr)}.charts,.filters{grid-template-columns:1fr}}
+@media(max-width:650px){.grid{grid-template-columns:repeat(2,1fr)}.details{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>📊 DASHBOARD QUẢN LÝ HỢP ĐỒNG</h1>
+    <p>Dữ liệu đầy đủ 39 Hợp đồng • Người quản lý đã đồng bộ về A. Nguyên</p>
+  </div>
+  <button class="btn-export" onclick="exportCSV()">📥 Xuất Danh Sách (Excel/CSV)</button>
+</div>
+
+<div class="wrap">
+  <!-- Thẻ KPI -->
+  <div class="grid">
+    <div class="card"><div class="label">Tổng Hợp Đồng</div><div class="kpi" id="k1">0</div></div>
+    <div class="card"><div class="label">Tổng Giá Trị</div><div class="kpi" id="k2">0</div></div>
+    <div class="card"><div class="label">Giá Trị Trung Bình</div><div class="kpi" id="k6">0</div></div>
+    <div class="card"><div class="label">Lĩnh Vực</div><div class="kpi" id="k3">0</div></div>
+    <div class="card"><div class="label">Loại Hợp Đồng</div><div class="kpi" id="k4">0</div></div>
+    <div class="card"><div class="label">Người Quản Lý</div><div class="kpi" id="k5">0</div></div>
+  </div>
+
+  <!-- Biểu đồ -->
+  <div class="charts">
+    <div class="card"><h3>Hợp đồng theo Lĩnh vực</h3><div class="chart"><canvas id="c1"></canvas></div></div>
+    <div class="card"><h3>Cơ cấu Loại hợp đồng</h3><div class="chart"><canvas id="c2"></canvas></div></div>
+  </div>
+  <div class="charts">
+    <div class="card"><h3>Giá trị hợp đồng theo Lĩnh vực (Tỷ VNĐ)</h3><div class="chart"><canvas id="c3"></canvas></div></div>
+    <div class="card"><h3>Phân bổ theo Công nghệ chiến lược</h3><div class="chart"><canvas id="c4"></canvas></div></div>
+  </div>
+
+  <!-- Bộ lọc -->
+  <div class="card" style="margin-top:16px">
+    <h3 style="margin-top:0">🔎 Tìm kiếm & Bộ lọc nâng cao</h3>
+    <div class="filters">
+      <input id="q" placeholder="Tìm kiếm tên HD, đối tác, từ khóa...">
+      <select id="f"><option value="">Tất cả Lĩnh vực</option></select>
+      <select id="t"><option value="">Tất cả Loại HĐ</option></select>
+      <select id="m"><option value="">Tất cả Người quản lý</option></select>
+      <select id="s"><option value="">Tất cả Công nghệ chiến lược</option></select>
+    </div>
+  </div>
+
+  <!-- Bảng danh sách -->
+  <div class="card table" style="margin-top:16px">
+    <h3 style="margin-top:0">📋 Danh sách Hợp đồng (<span id="count_display">0</span>)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>STT</th>
+          <th>Tên hợp đồng</th>
+          <th>Đơn vị cung</th>
+          <th>Đơn vị cầu</th>
+          <th>Giá trị (VNĐ)</th>
+          <th>Lĩnh vực</th>
+          <th>Loại HĐ</th>
+          <th>Công nghệ chiến lược</th>
+          <th>Quản lý</th>
+        </tr>
+      </thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal xem chi tiết -->
+<div class="modal" id="modal" onclick="if(event.target===this)closeM()">
+  <div class="modalbox">
+    <button class="close-btn" onclick="closeM()">✕</button>
+    <h3 id="mt" style="margin-top:0;color:#0b3d91"></h3>
+    <div class="details" id="dt"></div>
+  </div>
+</div>
+
+<script>
+const DATA_STR = `[
+  {"STT": 1, "Nội dung/Tên hợp đồng": "Chuyển giao và đào tạo vận hành 2 Robot AGV phục vụ vận chuyển hàng hóa trong nhà máy", "Đơn vị cung": "Công ty Cổ phần Cơ khí Kỹ thuật Đại Phong", "Người ký bên cung": "Ông Phạm Quang Tân - Quản lý", "Đơn vị cầu": "Công ty TNHH Kỹ thuật Tự động Phúc An", "Người ký bên cầu": "Ông Trương Việt Hùng - Phó Giám đốc", "Giá trị hợp đồng": 540000000, "Lĩnh vực": "Cơ khí, chế tạo máy", "Loại hợp đồng": "Chuyển giao công nghệ", "Công nghệ chiến lược": "Công nghệ robot và tự động hóa", "Người quản lý": "T. Trang"},
+  {"STT": 2, "Nội dung/Tên hợp đồng": "Nghiên cứu khả thi và xúc tiến các chương trình hợp tác R&D...", "Đơn vị cung": "Công ty Cổ phần Cơ khí Kỹ thuật Đại Phong", "Người ký bên cung": "Ông Lương Việt Quốc - Giám Đốc", "Đơn vị cầu": "Công ty TNHH Một thành viên Phát triển Công viên phần mềm Quang Trung", "Người ký bên cầu": "Ông Vũ Quang - Phó Giám đốc", "Giá trị hợp đồng": 3500000000, "Lĩnh vực": "Robotics và UAV", "Loại hợp đồng": "MOU", "Công nghệ chiến lược": "Công nghệ robot và tự động hóa", "Người quản lý": "T. Trang"},
+  {"STT": 3, "Nội dung/Tên hợp đồng": "Hệ thống thu phí tự động thông minh - tích hợp hoá đơn điện tử tại chợ Đầu Mối Hóc Môn", "Đơn vị cung": "Trung tâm kinh doanh khách hàng Doanh nghiệp 1 - VNPT TP.HCM", "Người ký bên cung": "Ông Tô Hoài Nhân - Giám đốc", "Đơn vị cầu": "Công ty TNHH Quản lý và Kinh doanh chợ Đầu Mối Hóc Môn", "Người ký bên cầu": "Ông Lê Văn Tiển - Giám đốc", "Giá trị hợp đồng": 1862000000, "Lĩnh vực": "Công nghệ thông tin", "Loại hợp đồng": "Chuyển giao công nghệ", "Công nghệ chiến lược": "Trí tuệ nhân tạo, bản sao số, thực tế ảo", "Người quản lý": "A. Nguyên"},
+  {"STT": 4, "Nội dung/Tên hợp đồng": "Hợp đồng thương mại về CN-TB điện tử, tự động hóa", "Đơn vị cung": "Công ty TNHH Conotec", "Người ký bên cung": "Ông Park Sung Back - Chủ tịch", "Đơn vị cầu": "Công ty TNHH Kỹ thuật Tự động Hàn Mỹ Việt", "Người ký bên cầu": "Bà Lê Thị Hồng Loan - Giám đốc", "Giá trị hợp đồng": 3481415525, "Lĩnh vực": "Điện tử, tự động hóa", "Loại hợp đồng": "Chuyển giao công nghệ và thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "A. Nguyên"},
+  {"STT": 5, "Nội dung/Tên hợp đồng": "Thương mại hóa chế phẩm vi sinh từ kết quả nghiên cứu...", "Đơn vị cung": "Trung tâm Công nghệ sinh học Thành phố Hồ Chí Minh", "Người ký bên cung": "TS. Hà Thị Loan - Phó Giám đốc", "Đơn vị cầu": "Công ty TNHH TM DV TKXD Thành Vinh", "Người ký bên cầu": "Ông Nguyễn Trí Kỷ - Giám đốc", "Giá trị hợp đồng": 515000000, "Lĩnh vực": "Công nghệ Sinh học", "Loại hợp đồng": "Hợp đồng dịch vụ sản xuất thử nghiệm / chế tạo mẫu", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "A. Nguyên"},
+  {"STT": 6, "Nội dung/Tên hợp đồng": "Thương mại hóa chế phẩm vi sinh từ kết quả nghiên cứu...", "Đơn vị cung": "Trung tâm Công nghệ sinh học Thành phố Hồ Chí Minh", "Người ký bên cung": "TS. Hà Thị Loan - Phó Giám đốc", "Đơn vị cầu": "Công ty TNHH SX - TMDV Trần Lê Q.T", "Người ký bên cầu": "Ông Trần Bá Thành - Giám đốc", "Giá trị hợp đồng": 885000000, "Lĩnh vực": "Công nghệ Sinh học", "Loại hợp đồng": "Hợp đồng dịch vụ sản xuất thử nghiệm / chế tạo mẫu", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "A. Nguyên"},
+  {"STT": 7, "Nội dung/Tên hợp đồng": "Công nghệ sản xuất chanh xắt lát sấy thăng hoa 100kg/mẻ", "Đơn vị cung": "Khoa Kỹ Thuật Hóa Học - Đại học Bách khoa TP.HCM", "Người ký bên cung": "PGS.TS Trần Thị Thu Trà", "Đơn vị cầu": "HTX Dịch Vụ Nông Nghiệp Mỹ Long", "Người ký bên cầu": "Ông Lê Văn Nam - Thành viên HĐQT", "Giá trị hợp đồng": 1172040000, "Lĩnh vực": "Công nghệ thực phẩm", "Loại hợp đồng": "Chuyển giao, tư vấn", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "D. Trang"},
+  {"STT": 8, "Nội dung/Tên hợp đồng": "Công nghệ và thiết bị cô đặc chân không dung tích 15 lít", "Đơn vị cung": "Công ty TNHH VinaOrganic", "Người ký bên cung": "ThS. Trần Công Nam - Giám Đốc", "Đơn vị cầu": "CÔNG TY TNHH E&L AUSTRALIA", "Người ký bên cầu": "Ông NGUYỄN HỒNG THÀNH - Giám Đốc", "Giá trị hợp đồng": 155705000, "Lĩnh vực": "Công nghệ thực phẩm", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "T. Trang"},
+  {"STT": 9, "Nội dung/Tên hợp đồng": "Hệ thống thiết bị nuôi cấy lỏng vi sinh 500 lít...", "Đơn vị cung": "Công ty TNHH Công Nghệ Sinh học Bốn Mùa", "Người ký bên cung": "Ông PHẠM ĐÌNH KHÔI - Giám đốc", "Đơn vị cầu": "Công ty TNHH Điền Trang", "Người ký bên cầu": "Ông Trần Văn Khánh - Giám đốc kỹ thuật", "Giá trị hợp đồng": 804600000, "Lĩnh vực": "Công nghệ Sinh học", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "H. Lương"},
+  {"STT": 10, "Nội dung/Tên hợp đồng": "Hệ thống dây chuyền sản xuất chế phẩm vi sinh", "Đơn vị cung": "Công ty TNHH Công Nghệ Sinh học Bốn Mùa", "Người ký bên cung": "Ông PHẠM ĐÌNH KHÔI - Giám đốc", "Đơn vị cầu": "Công ty Cổ phần Công nghệ Sinh học Omega", "Người ký bên cầu": "Ông Nguyễn Quốc Huy - Giám đốc điều hành", "Giá trị hợp đồng": 3267000000, "Lĩnh vực": "Công nghệ Sinh học", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "H. Lương"},
+  {"STT": 11, "Nội dung/Tên hợp đồng": "Chuyển giao Quy trình công nghệ xử lý nước điện từ...", "Đơn vị cung": "CÔNG TY TNHH EWATER ENGINEERING", "Người ký bên cung": "Ông Lê Trung Hiếu - Giám đốc", "Đơn vị cầu": "CÔNG TY CỔ PHẦN NOVAL ENGINEERING", "Người ký bên cầu": "Bà Phạm Thị Bích Phượng - Tổng Giám đốc", "Giá trị hợp đồng": 1500000000, "Lĩnh vực": "Môi trường", "Loại hợp đồng": "Chuyển giao công nghệ và thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "T. Trang"},
+  {"STT": 12, "Nội dung/Tên hợp đồng": "Hệ thống sấy đa quy trình DryMax 5100 gen 4", "Đơn vị cung": "Công ty Cổ phần Enco", "Người ký bên cung": "ThS Nguyễn Minh Thái - Tổng Giám đốc", "Đơn vị cầu": "Hộ Kinh doanh Vũ Xuân Xinh", "Người ký bên cầu": "Ông Vũ Văn Giáp - Đại diện HKD", "Giá trị hợp đồng": 1224482400, "Lĩnh vực": "Công nghệ thực phẩm", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "A. Nguyên"},
+  {"STT": 13, "Nội dung/Tên hợp đồng": "Pin Năng lượng mặt trời", "Đơn vị cung": "Công ty TNHH Việt Nam Solar", "Người ký bên cung": "Ông Đinh Tấn Lâm - Phó Giám đốc", "Đơn vị cầu": "Công ty TNHH Solar Gia Bảo Ninh Thuận", "Người ký bên cầu": "Ông Trương Ngọc Dương - Phó Giám đốc", "Giá trị hợp đồng": 39468000, "Lĩnh vực": "Điện, điện tử", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "T. Trang"},
+  {"STT": 14, "Nội dung/Tên hợp đồng": "Dây chuyền sơ chế ớt theo yêu cầu", "Đơn vị cung": "Công ty Cổ phần Machinex Việt Nam", "Người ký bên cung": "Bà Đài Thị Thuý Nhung - Tổng Giám đốc", "Đơn vị cầu": "Công ty TNHH Cơ khí vật tư nông nghiệp ESG", "Người ký bên cầu": "Bà Trương Thị Trúc My - Giám đốc", "Giá trị hợp đồng": 499400000, "Lĩnh vực": "Công nghệ thực phẩm", "Loại hợp đồng": "Chuyển giao công nghệ và thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "D. Trang"},
+  {"STT": 15, "Nội dung/Tên hợp đồng": "Máy đo độ loãng xương bằng tia X", "Đơn vị cung": "Công ty Cổ phần Y khoa NQ", "Người ký bên cung": "Ông Qua Thuật Chân - Tổng Giám đốc", "Đơn vị cầu": "Công ty cổ phần bệnh viện đa khoa Bình Định", "Người ký bên cầu": "Ông Đỗ Văn Tứ - Tổng Giám đốc", "Giá trị hợp đồng": 860000000, "Lĩnh vực": "Y tế", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "H. Lương"},
+  {"STT": 16, "Nội dung/Tên hợp đồng": "Phần mềm hệ thống kiểm tra chất lượng trên mẫu nhựa...", "Đơn vị cung": "Công ty Cổ phần I-Soft", "Người ký bên cung": "Ông Trương Quang Minh Trí - Giám đốc", "Đơn vị cầu": "Công ty cổ phần khuôn chính xác Minh Đạt", "Người ký bên cầu": "Ông Đỗ Sĩ Toàn - Tổng Giám đốc", "Giá trị hợp đồng": 127272400, "Lĩnh vực": "Công nghệ thông tin", "Loại hợp đồng": "Cung cấp phần mềm và thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "H. Lương"},
+  {"STT": 17, "Nội dung/Tên hợp đồng": "Bơm định lượng hóa chất FG Pumps", "Đơn vị cung": "Công ty TNHH Thạnh Hưng", "Người ký bên cung": "Ông Võ Minh Đạt - Giám đốc", "Đơn vị cầu": "Công ty CP Việt Water", "Người ký bên cầu": "Ông Nguyễn Trường Công - Giám đốc", "Giá trị hợp đồng": 181582560, "Lĩnh vực": "Cơ khí, chế tạo máy", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "D. Trang"},
+  {"STT": 18, "Nội dung/Tên hợp đồng": "Chảo nấu caramel", "Đơn vị cung": "Công ty TNHH Thuận Phát Tài", "Người ký bên cung": "Ông Nguyễn Trường Trung - Giám đốc", "Đơn vị cầu": "Ông Trần Ngọc Long Giang", "Người ký bên cầu": "Giám đốc", "Giá trị hợp đồng": 318600000, "Lĩnh vực": "Công nghệ thực phẩm", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "D. Trang"},
+  {"STT": 19, "Nội dung/Tên hợp đồng": "Hệ thống mạng, hệ thống camera giám sát", "Đơn vị cung": "VNPT TP.HCM", "Người ký bên cung": "Ông Đỗ Đức Trung - Phó Giám đốc", "Đơn vị cầu": "Bảo tàng mỹ thuật TP.HCM", "Người ký bên cầu": "Ông Trần Minh Công - Phó Giám đốc", "Giá trị hợp đồng": 380950000, "Lĩnh vực": "Công nghệ thông tin", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "A. Nguyên"},
+  {"STT": 20, "Nội dung/Tên hợp đồng": "Tấm pin năng lượng mặt trời 665 wp", "Đơn vị cung": "Công ty TNHH Việt Nam Solar", "Người ký bên cung": "Ông Đinh Tấn Lâm - Phó Giám đốc", "Đơn vị cầu": "Công ty TNHH MTV Năng lượng Phú Thịnh", "Người ký bên cầu": "Bà Trần Thị Huyền Trang - TGĐ", "Giá trị hợp đồng": 1034208000, "Lĩnh vực": "Điện, điện tử", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "T. Trang"},
+  {"STT": 21, "Nội dung/Tên hợp đồng": "Robot công nghiệp", "Đơn vị cung": "Công ty TNHH Cơ điện tử ACS", "Người ký bên cung": "Ông Phan Thanh Phúc - Giám đốc", "Đơn vị cầu": "Công ty TNHH Metal Solutions", "Người ký bên cầu": "Ông Nguyễn Minh - Giám đốc", "Giá trị hợp đồng": 880200000, "Lĩnh vực": "Cơ khí, chế tạo máy", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Công nghệ robot và tự động hóa", "Người quản lý": "D. Trang"},
+  {"STT": 22, "Nội dung/Tên hợp đồng": "Máy tách màu Lite60-C công suất dưới 300kg", "Đơn vị cung": "Công ty TNHH Công nghệ tầm nhìn HHC", "Người ký bên cung": "Ông Trần An - Giám đốc", "Đơn vị cầu": "HKD Lê Văn Tiệp", "Người ký bên cầu": "Ông Lê Văn Tiệp", "Giá trị hợp đồng": 187000000, "Lĩnh vực": "Cơ khí, chế tạo máy", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "A. Nguyên"},
+  {"STT": 23, "Nội dung/Tên hợp đồng": "Máy hàn khí Hydro HB-GREEN T25-5", "Đơn vị cung": "Công ty TNHH SX TM DV HB-GREEN", "Người ký bên cung": "Ông Nguyễn Thiện Bình - Giám đốc", "Đơn vị cầu": "Công ty TNHH Toàn Á", "Người ký bên cầu": "Bà Nguyễn Thị Viên Phương - Giám đốc", "Giá trị hợp đồng": 172800000, "Lĩnh vực": "Cơ khí, chế tạo máy", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "A Công"},
+  {"STT": 24, "Nội dung/Tên hợp đồng": "Máy tách màu nông sản model L1", "Đơn vị cung": "Công ty TNHH Công nghệ tầm nhìn HHC", "Người ký bên cung": "Ông Trần An - Giám đốc", "Đơn vị cầu": "Ông Huỳnh Anh Khoa", "Người ký bên cầu": "Ông Huỳnh Anh Khoa", "Giá trị hợp đồng": 259200000, "Lĩnh vực": "Cơ khí, chế tạo máy", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "A. Nguyên"},
+  {"STT": 25, "Nội dung/Tên hợp đồng": "Máy chưng cất thu hồi dung môi", "Đơn vị cung": "Công ty TNHH Công nghệ máy thực phẩm Pháp Việt", "Người ký bên cung": "Ông Nguyễn Ngọc Tươi - Tổng Giám đốc", "Đơn vị cầu": "Công ty TNHH Hải Thịnh Phát", "Người ký bên cầu": "Ông Văn Công Hải - Giám đốc", "Giá trị hợp đồng": 439263000, "Lĩnh vực": "Công nghệ thực phẩm", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "T. Trang"},
+  {"STT": 26, "Nội dung/Tên hợp đồng": "Hệ thống điện mặt trời áp mái công suất 128kWp", "Đơn vị cung": "Công ty CP Năng lượng mặt trời Việt Nam", "Người ký bên cung": "Bà Đinh Ngọc Vân Phương", "Đơn vị cầu": "Công ty TNHH Thiên Ân", "Người ký bên cầu": "Ông Nguyễn Văn Duy - Giám đốc", "Giá trị hợp đồng": 931774000, "Lĩnh vực": "Điện, điện tử", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "D. Trang"},
+  {"STT": 27, "Nội dung/Tên hợp đồng": "Máy lọc nước siêu sạch L1 DI Plus", "Đơn vị cung": "Công ty CP Huseco", "Người ký bên cung": "Ông Phạm Cao Trọng - Tổng Giám đốc", "Đơn vị cầu": "Công ty TNHH Hải Anh", "Người ký bên cầu": "Bà Lê Thị Phương Thảo - Phó Giám đốc", "Giá trị hợp đồng": 229629600, "Lĩnh vực": "Cơ khí, chế tạo máy", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "Hương"},
+  {"STT": 28, "Nội dung/Tên hợp đồng": "Cung cấp dịch vụ sử dụng ứng dụng truy xuất nguồn gốc DeepTrace", "Đơn vị cung": "Công ty CP Deep Pro", "Người ký bên cung": "Bà Bùi Ngọc Lê - CEO", "Đơn vị cầu": "Công ty TNHH Greencycle Việt Nam", "Người ký bên cầu": "Ông Đoàn Xuân Khiêm - Giám đốc", "Giá trị hợp đồng": 50000000, "Lĩnh vực": "Công nghệ thông tin", "Loại hợp đồng": "Cung cấp dịch vụ", "Công nghệ chiến lược": "Công nghệ số (AI, IoT, Blockchain)", "Người quản lý": "Hương"},
+  {"STT": 29, "Nội dung/Tên hợp đồng": "Máy in phun công nghiệp ST100", "Đơn vị cung": "Công ty TNHH Ngân Nhân Phát", "Người ký bên cung": "Ông Cao Huỳnh Tiến Nghĩa - Giám đốc", "Đơn vị cầu": "Công ty TNHH Thảo Xuân", "Người ký bên cầu": "Bà Trần Thanh Thảo - Giám đốc", "Giá trị hợp đồng": 86400000, "Lĩnh vực": "Cơ khí, chế tạo máy", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "A. Nguyên"},
+  {"STT": 30, "Nội dung/Tên hợp đồng": "Trang thiết bị CNTT phục vụ chuyển đổi số", "Đơn vị cung": "VNPT TP.HCM", "Người ký bên cung": "Ông Đỗ Đức Trung - Phó Giám đốc", "Đơn vị cầu": "UBMT TQ Việt Nam phường Phú Lâm", "Người ký bên cầu": "Ông Trần Ngọc Minh - Chủ tịch", "Giá trị hợp đồng": 1116304490, "Lĩnh vực": "Công nghệ thông tin", "Loại hợp đồng": "Cung cấp phần mềm và thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "A. Nguyên"},
+  {"STT": 31, "Nội dung/Tên hợp đồng": "Thiết bị y tế", "Đơn vị cung": "Công ty Cổ phần Y khoa NQ", "Người ký bên cung": "Ông Qua Thất Chuân - Tổng Giám đốc", "Đơn vị cầu": "Công ty Cổ phần Bệnh viện Quốc tế Carmel", "Người ký bên cầu": "Ông Nguyễn Hữu Trâm Em - CEO", "Giá trị hợp đồng": 940585000, "Lĩnh vực": "Y tế", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "H. Lương"},
+  {"STT": 32, "Nội dung/Tên hợp đồng": "Hệ thống xử lý nước tuần hoàn trong nuôi trồng thủy sản", "Đơn vị cung": "Công ty Cổ phần AQUA RAS", "Người ký bên cung": "Bà Nguyễn Thị Phương Dung - Giám đốc", "Đơn vị cầu": "Công ty TNHH Thành Phương", "Người ký bên cầu": "Ông Võ Thành Phương - Giám đốc", "Giá trị hợp đồng": 243000000, "Lĩnh vực": "Thủy sản", "Loại hợp đồng": "Chuyển giao công nghệ và thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "D. Trang"},
+  {"STT": 33, "Nội dung/Tên hợp đồng": "Máy nghiền inox 304 dày 10mm", "Đơn vị cung": "Công ty TNHH Thuận Phát Tài", "Người ký bên cung": "Ông Nguyễn Trường Trung - Giám đốc", "Đơn vị cầu": "Công ty TNHH Hai Lắm", "Người ký bên cầu": "Bà Phan Thị Lắm - Giám đốc", "Giá trị hợp đồng": 135000000, "Lĩnh vực": "Công nghệ thực phẩm", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "D. Trang"},
+  {"STT": 34, "Nội dung/Tên hợp đồng": "Linh kiện thiết bị phòng thí nghiệm ECO 1200", "Đơn vị cung": "Công ty Vinatek Group", "Người ký bên cung": "Bà Hoàng Tường Vi - Phó Giám đốc", "Đơn vị cầu": "Chi nhánh Bất động sản TNT", "Người ký bên cầu": "Ông Nguyễn Phú Khánh - Quản lý", "Giá trị hợp đồng": 96112440, "Lĩnh vực": "Công nghệ Sinh học", "Loại hợp đồng": "Cung cấp phần mềm và thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "H. Lương"},
+  {"STT": 35, "Nội dung/Tên hợp đồng": "Máy đo độ ẩm Bear", "Đơn vị cung": "Công ty TNHH Thực phẩm Bear", "Người ký bên cung": "Ông Tu Zheng - Giám đốc", "Đơn vị cầu": "Công ty TNHH Hai Con Yến", "Người ký bên cầu": "Ông Nguyễn Ngọc Hùng - Giám đốc", "Giá trị hợp đồng": 17500000, "Lĩnh vực": "Công nghệ thực phẩm", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "A. Nguyên"},
+  {"STT": 36, "Nội dung/Tên hợp đồng": "Máy sấy lạnh chất lượng cao SS-5412HP3D", "Đơn vị cung": "Công ty Cổ phần Kỹ nghệ xanh Việt Nam", "Người ký bên cung": "Ông Phạm Hữu Tâm - Tổng Giám đốc", "Đơn vị cầu": "Hội làm vườn Việt Nam", "Người ký bên cầu": "Ông Lê Quốc Doanh - Chủ tịch", "Giá trị hợp đồng": 76356000, "Lĩnh vực": "Công nghệ thực phẩm", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "A. Nguyên"},
+  {"STT": 37, "Nội dung/Tên hợp đồng": "Máy sấy lạnh chất lượng cao SS-5720HP3DLX", "Đơn vị cung": "Công ty Cổ phần Kỹ nghệ xanh Việt Nam", "Người ký bên cung": "Ông Phạm Hữu Tâm - Tổng Giám đốc", "Đơn vị cầu": "Công ty TNHH Phước Kỳ An", "Người ký bên cầu": "Bà Nguyễn Thị Ngọc Nga - Giám đốc", "Giá trị hợp đồng": 390000000, "Lĩnh vực": "Công nghệ thực phẩm", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "A. Nguyên"},
+  {"STT": 38, "Nội dung/Tên hợp đồng": "Máy in 3D Qidi Max 4 Combo", "Đơn vị cung": "Công ty TNHH TM DV 3D CORETECH", "Người ký bên cung": "Ông Tống Đình Quân - Giám đốc", "Đơn vị cầu": "Công ty TNHH Lim Production", "Người ký bên cầu": "Bà Đoàn Thị Nhã Phương - Giám đốc", "Giá trị hợp đồng": 34236000, "Lĩnh vực": "Công nghệ thông tin", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "T. Trang"},
+  {"STT": 39, "Nội dung/Tên hợp đồng": "Máy in 3D Qidi Max 4 Combo", "Đơn vị cung": "Công ty TNHH TM DV 3D CORETECH", "Người ký bên cung": "Ông Tống Đình Quân - Giám đốc", "Đơn vị cầu": "Công ty TNHH SX -TM PUWA", "Người ký bên cầu": "Ông Chương A Xám - Giám đốc", "Giá trị hợp đồng": 36525600, "Lĩnh vực": "Công nghệ thông tin", "Loại hợp đồng": "Mua bán thiết bị", "Công nghệ chiến lược": "Chưa phân loại", "Người quản lý": "T. Trang"}
+]`;
+
+let rows = JSON.parse(DATA_STR);
+let filteredRows = [...rows];
+let charts = {};
+
+const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+const money = x => new Intl.NumberFormat('vi-VN').format(Number(x || 0)) + ' VNĐ';
+const shortMoney = x => x >= 1e9 ? (x / 1e9).toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' tỷ' : (x / 1e6).toLocaleString('vi-VN', { maximumFractionDigits: 0 }) + ' triệu';
+
+function count(rs, key) {
+  let o = {};
+  rs.forEach(r => { let k = r[key] || 'Chưa phân loại'; o[k] = (o[k] || 0) + 1 });
+  return o;
+}
+
+function values(rs, key) {
+  let o = {};
+  rs.forEach(r => { let k = r[key] || 'Chưa phân loại'; o[k] = (o[k] || 0) + Number(r['Giá trị hợp đồng'] || 0) });
+  return o;
+}
+
+function populateSelect(id, vals, defaultLabel) {
+  let e = document.getElementById(id);
+  let uniqueVals = [...new Set(vals.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'vi'));
+  e.innerHTML = `<option value="">${defaultLabel}</option>`;
+  uniqueVals.forEach(v => {
+    let o = document.createElement('option');
+    o.value = v; o.textContent = v;
+    e.appendChild(o);
+  });
+  e.value = "";
+}
+
+function renderChart(id, type, labels, data, label) {
+  if (charts[id]) charts[id].destroy();
+  const colors = ['#0b74de','#107c41','#f59e0b','#ef4444','#8b5cf6','#64748b','#06b6d4','#ec4899'];
+  charts[id] = new Chart(document.getElementById(id), {
+    type,
+    data: { 
+      labels, 
+      datasets: [{ 
+        label, 
+        data, 
+        backgroundColor: type === 'doughnut' ? colors : '#0b74de', 
+        borderWidth: 1 
+      }] 
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: type === 'doughnut', position: 'right' } },
+      scales: type === 'doughnut' ? {} : { y: { beginAtZero: true } }
+    }
+  });
+}
+
+function render(rs) {
+  filteredRows = rs;
+  const totalVal = rs.reduce((s, r) => s + Number(r['Giá trị hợp đồng'] || 0), 0);
+  const avgVal = rs.length ? totalVal / rs.length : 0;
+
+  document.getElementById('k1').textContent = rs.length;
+  document.getElementById('k2').textContent = shortMoney(totalVal);
+  document.getElementById('k6').textContent = shortMoney(avgVal);
+  document.getElementById('k3').textContent = new Set(rs.map(r => r['Lĩnh vực'])).size;
+  document.getElementById('k4').textContent = new Set(rs.map(r => r['Loại hợp đồng'])).size;
+  document.getElementById('k5').textContent = new Set(rs.map(r => r['Người quản lý'])).size;
+  document.getElementById('count_display').textContent = rs.length;
+
+  let a = count(rs, 'Lĩnh vực'), 
+      b = count(rs, 'Loại hợp đồng'), 
+      c = values(rs, 'Lĩnh vực'), 
+      d = count(rs, 'Công nghệ chiến lược');
+
+  renderChart('c1', 'bar', Object.keys(a), Object.values(a), 'Số hợp đồng');
+  renderChart('c2', 'doughnut', Object.keys(b), Object.values(b), 'Số hợp đồng');
+  renderChart('c3', 'bar', Object.keys(c), Object.values(c).map(x => x / 1e9), 'Giá trị (Tỷ VNĐ)');
+  renderChart('c4', 'bar', Object.keys(d), Object.values(d), 'Số hợp đồng');
+
+  document.getElementById('tb').innerHTML = rs.map(r => `
+    <tr onclick='show(${JSON.stringify(r).replace(/'/g, "&#39;")})'>
+      <td>${r.STT}</td>
+      <td><b>${esc(r['Nội dung/Tên hợp đồng'])}</b></td>
+      <td>${esc(r['Đơn vị cung'])}</td>
+      <td>${esc(r['Đơn vị cầu'])}</td>
+      <td><b>${money(r['Giá trị hợp đồng'])}</b></td>
+      <td><span class="badge">${esc(r['Lĩnh vực'])}</span></td>
+      <td>${esc(r['Loại hợp đồng'])}</td>
+      <td><span class="badge-tech">${esc(r['Công nghệ chiến lược'] || 'Chưa phân loại')}</span></td>
+      <td>${esc(r['Người quản lý'])}</td>
+    </tr>
+  `).join('');
+}
+
+function apply() {
+  let q = document.getElementById('q').value.toLowerCase(),
+      f = document.getElementById('f').value,
+      t = document.getElementById('t').value,
+      m = document.getElementById('m').value,
+      s = document.getElementById('s').value;
+
+  let rs = rows.filter(r => 
+    Object.values(r).join(' ').toLowerCase().includes(q) &&
+    (!f || r['Lĩnh vực'] === f) &&
+    (!t || r['Loại hợp đồng'] === t) &&
+    (!m || r['Người quản lý'] === m) &&
+    (!s || r['Công nghệ chiến lược'] === s)
+  );
+  render(rs);
+}
+
+function show(r) {
+  document.getElementById('mt').textContent = r['Nội dung/Tên hợp đồng'];
+  let fs = ['STT', 'Đơn vị cung', 'Người ký bên cung', 'Đơn vị cầu', 'Người ký bên cầu', 'Giá trị hợp đồng', 'Lĩnh vực', 'Loại hợp đồng', 'Công nghệ chiến lược', 'Người quản lý'];
+  document.getElementById('dt').innerHTML = fs.map(k => `
+    <div class="detail">
+      <b>${esc(k)}</b>
+      <div>${esc(k === 'Giá trị hợp đồng' ? money(r[k]) : r[k] || 'Chưa có thông tin')}</div>
+    </div>
+  `).join('');
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeM() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+function exportCSV() {
+  if (!filteredRows.length) return alert('Không có dữ liệu để xuất!');
+  let headers = ['STT', 'Tên hợp đồng', 'Đơn vị cung', 'Người ký bên cung', 'Đơn vị cầu', 'Người ký bên cầu', 'Giá trị hợp đồng (VNĐ)', 'Lĩnh vực', 'Loại hợp đồng', 'Công nghệ chiến lược', 'Người quản lý'];
+  let csvRows = [headers.join(',')];
+
+  filteredRows.forEach(r => {
+    let row = [
+      r.STT,
+      `"${(r['Nội dung/Tên hợp đồng'] || '').replace(/"/g, '""')}"`,
+      `"${(r['Đơn vị cung'] || '').replace(/"/g, '""')}"`,
+      `"${(r['Người ký bên cung'] || '').replace(/"/g, '""')}"`,
+      `"${(r['Đơn vị cầu'] || '').replace(/"/g, '""')}"`,
+      `"${(r['Người ký bên cầu'] || '').replace(/"/g, '""')}"`,
+      r['Giá trị hợp đồng'],
+      `"${(r['Lĩnh vực'] || '').replace(/"/g, '""')}"`,
+      `"${(r['Loại hợp đồng'] || '').replace(/"/g, '""')}"`,
+      `"${(r['Công nghệ chiến lược'] || '').replace(/"/g, '""')}"`,
+      `"${(r['Người quản lý'] || '').replace(/"/g, '""')}"`
+    ];
+    csvRows.push(row.join(','));
+  });
+
+  let blob = new Blob(["\ufeff" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  let link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `Danh_Sach_Hop_Dong_${new Date().toISOString().slice(0,10)}.csv`;
+  link.click();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeM(); });
+
+// Khởi tạo các Select
+populateSelect('f', rows.map(r => r['Lĩnh vực']), 'Tất cả Lĩnh vực');
+populateSelect('t', rows.map(r => r['Loại hợp đồng']), 'Tất cả Loại HĐ');
+populateSelect('m', rows.map(r => r['Người quản lý']), 'Tất cả Người quản lý');
+populateSelect('s', rows.map(r => r['Công nghệ chiến lược']), 'Tất cả Công nghệ chiến lược');
+
+['q', 'f', 't', 'm', 's'].forEach(id => document.addEventListener('input', apply));
+
+// Tự động render dữ liệu khi mở
+render(rows);
+</script>
+</body>
+</html>
