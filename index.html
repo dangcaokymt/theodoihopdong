@@ -3,26 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Trung Tâm Khởi Nghiệp Sáng Tạo - Phòng Giao Dịch Công Nghệ</title>
+<title>Dashboard Quản lý Hợp đồng - Clean Sync</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 *{box-sizing:border-box}
 body{
   margin:0;
-  background:#f8fafc;
+  background:#f1f5f9;
   color:#1e293b;
-  font-family:'Segoe UI',Roboto,-apple-system,Arial,sans-serif;
+  font-family:'Segoe UI',Roboto,Arial,sans-serif;
   background-image: 
     radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.08) 0px, transparent 50%),
     radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.08) 0px, transparent 50%);
   background-attachment: fixed;
 }
 
-/* Header 3D Hi-Tech */
+/* Header 3D Light */
 .header{
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
   color: white;
-  padding: 20px 3vw;
+  padding: 22px 4vw;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -31,44 +31,36 @@ body{
   box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.3);
   border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 }
-.header-title h1{
+.header h1{
   margin:0;
-  font-size: 22px;
+  font-size: 25px;
   font-weight: 800;
   letter-spacing: 0.5px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-.header-title p{
-  margin: 5px 0 0 0;
-  font-size: 14px;
-  opacity: 0.95;
-  font-weight: 600;
-  color: #e0f2fe;
-  letter-spacing: 0.3px;
-}
-.header-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.header-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 
-.wrap{max-width:1700px;margin:auto;padding:22px 16px}
+.wrap{max-width:1650px;margin:auto;padding:24px 20px}
 
-/* KPI Cards */
-.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+/* Layout Grid & Card 3D Light */
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:18px}
 .card{
   background: #ffffff;
-  border: 1px solid rgba(226, 232, 240, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.8);
   border-radius: 16px;
   padding: 18px;
   box-shadow: 
-    0 10px 25px -5px rgba(148, 163, 184, 0.15),
-    0 4px 6px -2px rgba(148, 163, 184, 0.08),
+    0 10px 25px -5px rgba(148, 163, 184, 0.2),
+    0 4px 6px -2px rgba(148, 163, 184, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
 .card:hover{
-  transform: translateY(-4px);
+  transform: translateY(-5px) scale(1.005);
   box-shadow: 
-    0 18px 28px -10px rgba(2, 132, 199, 0.22),
+    0 20px 30px -10px rgba(2, 132, 199, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 1);
   border-color: #38bdf8;
 }
@@ -83,32 +75,29 @@ body{
 .kpi{
   font-size: 26px;
   font-weight: 800;
-  margin-top: 6px;
+  margin-top: 8px;
   color: #0284c7;
-  text-shadow: 0 2px 4px rgba(2, 132, 199, 0.12);
+  text-shadow: 0 2px 4px rgba(2, 132, 199, 0.15);
 }
-.kpi-accent{ color: #0d9488; }
-.kpi-warn{ color: #f59e0b; }
-.kpi-purple{ color: #8b5cf6; }
 
-/* Charts */
-.charts{display:grid;grid-template-columns:1fr 1.2fr;gap:18px;margin-top:20px}
-.chart{height:290px;position:relative}
+/* Charts Section */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}
+.chart{height:300px;position:relative}
 .card h3{
   margin-top: 0;
   font-size: 15px;
   color: #0f172a;
   font-weight: 700;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.5px;
   border-left: 4px solid #0284c7;
   padding-left: 10px;
 }
 
-/* Filters */
-.filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}
-input,select,button{
+/* Filters 3D Light */
+.filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:12px}
+input,select,button,textarea{
   width:100%;
-  padding:10px 14px;
+  padding:11px 14px;
   border:1px solid #cbd5e1;
   border-radius:10px;
   background: #f8fafc;
@@ -116,31 +105,33 @@ input,select,button{
   font-size:13px;
   outline: none;
   transition: all 0.2s ease;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
 }
-input:focus, select:focus{
+input:focus, select:focus, textarea:focus{
   border-color: #0284c7;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
 }
+select option { background: #ffffff; color: #0f172a; }
 
-/* Buttons */
+/* Buttons 3D Styling Light */
 .btn{
   font-weight: 700;
   border: none;
   cursor: pointer;
-  padding: 10px 16px;
+  padding: 10px 18px;
   border-radius: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   transition: all 0.2s ease;
-  font-size: 13px;
+  letter-spacing: 0.3px;
 }
 .btn-refresh{
   background: linear-gradient(135deg, #0284c7, #0369a1);
   color: white;
-  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3), inset 0 1px 0 rgba(255,255,255,0.4);
 }
 .btn-refresh:hover{
   background: linear-gradient(135deg, #38bdf8, #0284c7);
@@ -149,16 +140,16 @@ input:focus, select:focus{
 .btn-export{
   background: linear-gradient(135deg, #10b981, #059669);
   color: white;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255,255,255,0.4);
 }
 .btn-export:hover{
   background: linear-gradient(135deg, #34d399, #10b981);
   transform: translateY(-2px);
 }
 
-/* Table */
-table{width:100%;border-collapse:separate;border-spacing:0;margin-top:10px}
-th,td{padding:11px 12px;border-bottom:1px solid #e2e8f0;text-align:left;font-size:12.5px}
+/* Table 3D Styling Light */
+table{width:100%;border-collapse:separate;border-spacing:0;margin-top:15px}
+th,td{padding:12px 14px;border-bottom:1px solid #e2e8f0;text-align:left;font-size:13px}
 th{
   background: #f8fafc;
   color: #0369a1;
@@ -166,180 +157,238 @@ th{
   position:sticky;
   top:0;
   z-index:1;
+  letter-spacing: 0.5px;
   border-bottom: 2px solid #bae6fd;
-  white-space: nowrap;
 }
+tr{ transition: background 0.2s ease; }
 tr:hover td{ background: #f0f9ff; }
 
-/* Badges */
-.badge-group{
-  padding:4px 8px;
-  border-radius:6px;
+.badge{
+  padding:4px 10px;
+  border-radius:999px;
+  background: #e0f2fe;
+  color:#0284c7;
   font-weight:700;
   font-size:11px;
   display:inline-block;
-  white-space: nowrap;
+  border: 1px solid #bae6fd;
 }
-.badge-techport{ background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; }
-.badge-xuctien{ background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
-.badge-ketnoi{ background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
-
-.badge-sub{
-  padding:3px 7px;
-  border-radius:4px;
-  background: #f1f5f9;
-  color: #475569;
-  font-size:11px;
-  border: 1px solid #cbd5e1;
-  display: inline-block;
-  margin-top: 3px;
-}
-.badge-person{
-  padding:3px 7px;
+.badge-tech{
+  padding:4px 10px;
   border-radius:6px;
-  background: #ecfdf5;
-  color: #047857;
+  background: #dcfce7;
+  color:#15803d;
   font-weight:600;
   font-size:11px;
-  border: 1px solid #a7f3d0;
-  display: inline-block;
+  border:1px solid #bbf7d0;
+  display:inline-block;
 }
-.badge-output{
-  white-space: pre-line;
-  line-height: 1.4;
-  color: #334155;
-  font-size: 12px;
+.table{overflow:auto;max-height:600px}
+#loading-indicator {
+  display: none;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 13px;
 }
 
-.table-wrap{overflow:auto;max-height:620px;border-radius:8px;}
-#sync-status{font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;}
-
-@media(max-width:1200px){.grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}.charts,.filters{grid-template-columns:1fr}}
+@media(max-width:1200px){.grid{grid-template-columns:repeat(3,1fr)}.charts,.filters{grid-template-columns:1fr}}
+@media(max-width:650px){.grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="header-title">
-    <h1>🚀 TRUNG TÂM KHỞI NGHIỆP SÁNG TẠO</h1>
-    <p>📋 Phòng Giao dịch công nghệ &bull; Theo dõi nhiệm vụ công tác</p>
+  <div>
+    <h1>📊 DASHBOARD QUẢN LÝ HỢP ĐỒNG</h1>
   </div>
   <div class="header-actions">
-    <div id="sync-status">🟢 Dữ liệu trực tuyến sẵn sàng</div>
-    <button class="btn btn-refresh" onclick="syncGoogleSheets()">🔄 Đồng bộ Google Sheets</button>
+    <span id="loading-indicator">🔄 Đang đồng bộ...</span>
+    <button class="btn btn-refresh" onclick="fetchSheetData()">🔄 Cập nhật Dữ liệu</button>
     <button class="btn btn-export" onclick="exportExcel()">📥 Xuất File Excel (.xls)</button>
   </div>
 </div>
 
 <div class="wrap">
-  <!-- Thẻ KPI -->
+  <!-- Thẻ KPI 3D Light -->
   <div class="grid">
-    <div class="card"><div class="label">Tổng Nhiệm Vụ</div><div class="kpi" id="k_total">0</div></div>
-    <div class="card"><div class="label">Nhóm Techport</div><div class="kpi" id="k_techport">0</div></div>
-    <div class="card"><div class="label">Nhóm Xúc Tiến</div><div class="kpi kpi-warn" id="k_xuctien">0</div></div>
-    <div class="card"><div class="label">Nhóm Kết Nối</div><div class="kpi kpi-purple" id="k_ketnoi">0</div></div>
-    <div class="card"><div class="label">Chuyên Viên Tham Gia</div><div class="kpi kpi-accent" id="k_staff">0</div></div>
+    <div class="card"><div class="label">Tổng Hợp Đồng</div><div class="kpi" id="k1">0</div></div>
+    <div class="card"><div class="label">Tổng Giá Trị</div><div class="kpi" id="k2">0</div></div>
+    <div class="card"><div class="label">Giá Trị Trung Bình</div><div class="kpi" id="k6">0</div></div>
+    <div class="card"><div class="label">Lĩnh Vực</div><div class="kpi" id="k3">0</div></div>
+    <div class="card"><div class="label">Loại Hợp Đồng</div><div class="kpi" id="k4">0</div></div>
+    <div class="card"><div class="label">Người Quản Lý</div><div class="kpi" id="k5">0</div></div>
   </div>
 
-  <!-- Biểu đồ phân tích -->
+  <!-- Biểu đồ Hi-Tech Light -->
   <div class="charts">
-    <div class="card">
-      <h3>Phân bổ Nhiệm vụ theo Nhóm Công tác</h3>
-      <div class="chart"><canvas id="c1"></canvas></div>
-    </div>
-    <div class="card">
-      <h3>Số lượng Đầu việc phụ trách theo Chuyên viên</h3>
-      <div class="chart"><canvas id="c2"></canvas></div>
-    </div>
+    <div class="card"><h3>Hợp đồng theo Lĩnh vực</h3><div class="chart"><canvas id="c1"></canvas></div></div>
+    <div class="card"><h3>Cơ cấu Loại hợp đồng</h3><div class="chart"><canvas id="c2"></canvas></div></div>
+  </div>
+  <div class="charts">
+    <div class="card"><h3>Giá trị hợp đồng theo Lĩnh vực (Tỷ VNĐ)</h3><div class="chart"><canvas id="c3"></canvas></div></div>
+    <div class="card"><h3>Phân bổ theo Công nghệ chiến lược</h3><div class="chart"><canvas id="c4"></canvas></div></div>
   </div>
 
-  <!-- Bộ lọc & Tra cứu -->
+  <!-- Bộ lọc -->
   <div class="card" style="margin-top:20px">
-    <h3 style="margin-top:0">🔎 Bộ lọc & Tra cứu nhanh</h3>
+    <h3 style="margin-top:0">🔎 Tìm kiếm & Bộ lọc nâng cao</h3>
     <div class="filters">
-      <input id="q" placeholder="Tìm kiếm nội dung nhiệm vụ, chuyên viên, sản phẩm đầu ra, đối tượng...">
-      <select id="f_group"><option value="">Tất cả Nhóm nhiệm vụ</option></select>
-      <select id="f_staff"><option value="">Tất cả Chuyên viên</option></select>
+      <input id="q" placeholder="Tìm kiếm tên HD, đối tác, từ khóa...">
+      <select id="f"><option value="">Tất cả Lĩnh vực</option></select>
+      <select id="t"><option value="">Tất cả Loại HĐ</option></select>
+      <select id="m"><option value="">Tất cả Người quản lý</option></select>
+      <select id="s"><option value="">Tất cả Công nghệ chiến lược</option></select>
     </div>
   </div>
 
-  <!-- Bảng Dữ Liệu Chi Tiết -->
-  <div class="card" style="margin-top:20px; padding: 12px 18px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-      <h3 style="margin:0">📋 Danh sách Chi tiết Nhiệm vụ (<span id="count_display" style="color:#0284c7">0</span>)</h3>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>STT</th>
-            <th>Nhóm công tác</th>
-            <th>Nội dung / Nhiệm vụ</th>
-            <th>Phân loại / Đối tượng</th>
-            <th>Chuyên viên thực hiện</th>
-            <th>Lãnh đạo phòng</th>
-            <th>Chỉ đạo / Phê duyệt</th>
-            <th>Sản phẩm / Minh chứng</th>
-            <th style="text-align:center">Kế hoạch 12 tháng</th>
-          </tr>
-        </thead>
-        <tbody id="tb"></tbody>
-      </table>
-    </div>
+  <!-- Bảng danh sách -->
+  <div class="card table" style="margin-top:20px">
+    <h3 style="margin-top:0">📋 Danh sách Hợp đồng (<span id="count_display" style="color:#0284c7">0</span>)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>STT</th>
+          <th>Tên hợp đồng</th>
+          <th>Đơn vị cung</th>
+          <th>Đơn vị cầu</th>
+          <th>Giá trị (VNĐ)</th>
+          <th>Lĩnh vực</th>
+          <th>Loại HĐ</th>
+          <th>Công nghệ chiến lược</th>
+          <th>Quản lý</th>
+        </tr>
+      </thead>
+      <tbody id="tb"></tbody>
+    </table>
   </div>
 </div>
 
 <script>
 Chart.defaults.color = '#64748b';
-Chart.defaults.borderColor = '#f1f5f9';
+Chart.defaults.borderColor = '#e2e8f0';
 
-// Nguồn Google Sheet Online CSV xuất bản
-const GSHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRDtmx6r9ckdfGP-j_q6hajEYc3UVEeu3kIFSkCTuFdyilHO5bkD6i_g2oFA3cJ0xy2FUvnDE4QO3dk/pub?gid=0&single=true&output=csv";
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQDKcJK0XdTrylFiP9Iaz2jA8HR6Cel5OascnacRm14HjScgBfbbEjuiNVZpEAIKGrbrRytGGwCscTg/pub?gid=0&single=true&output=tsv";
 
-// Dữ liệu chuẩn hoá từ file Excel (Bỏ hàng '6 rõ')
-const defaultData = [
-  // Nhóm Techport
-  { id: 1, group: "Nhóm Techport", noidung: "Hồ sơ công nghệ", sub: "Chung", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trịnh Mai Hương", sanpham: "Danh sách hồ sơ" },
-  { id: 2, group: "Nhóm Techport", noidung: "Dây chuyền/thiết bị", sub: "Chung", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trịnh Mai Hương", sanpham: "Danh sách các dây chuyền, thiết bị" },
-  { id: 3, group: "Nhóm Techport", noidung: "Chuyên gia tư vấn", sub: "Chung", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trịnh Mai Hương", sanpham: "Thông tin chuyên gia" },
-  { id: 4, group: "Nhóm Techport", noidung: "Tài sản trí tuệ", sub: "Chung", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trịnh Mai Hương", sanpham: "Các tài sản SHTT" },
-  { id: 5, group: "Nhóm Techport", noidung: "Đơn vị cung ứng", sub: "Viện trường", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trịnh Mai Hương", sanpham: "Danh sách viện, trường" },
-  { id: 6, group: "Nhóm Techport", noidung: "Đơn vị cung ứng", sub: "Doanh nghiệp", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trịnh Mai Hương", sanpham: "Danh sách doanh nghiệp" },
-  { id: 7, group: "Nhóm Techport", noidung: "Lượt truy cập", sub: "Chung", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trịnh Mai Hương", sanpham: "Số lượng lượt truy cập" },
-  { id: 8, group: "Nhóm Techport", noidung: "User mới", sub: "Chung", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trịnh Mai Hương", sanpham: "Danh sách Tài khoản Techport" },
-  { id: 9, group: "Nhóm Techport", noidung: "Yêu cầu công nghệ tiếp nhận", sub: "Chung", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trịnh Mai Hương", sanpham: "Danh sách các yêu cầu" },
-  { id: 10, group: "Nhóm Techport", noidung: "Lượt kết nối cung cầu", sub: "Chung", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trịnh Mai Hương", sanpham: "Các bản yêu cầu kết nối" },
-
-  // Nhóm Xúc tiến
-  { id: 11, group: "Nhóm Xúc tiến", noidung: "Hỗ trợ lượt trưng bày công nghệ", sub: "Viện trường", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Nguyễn Ngọc Thuỳ Trang, Phạm Huỳnh Trung Nguyên", sanpham: "1. Danh sách viện, trường\n2. Hồ sơ sự kiện" },
-  { id: 12, group: "Nhóm Xúc tiến", noidung: "Hỗ trợ lượt trưng bày công nghệ", sub: "Doanh nghiệp", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Nguyễn Ngọc Thuỳ Trang, Phạm Huỳnh Trung Nguyên", sanpham: "1. Danh sách doanh nghiệp\n2. Hồ sơ sự kiện" },
-  { id: 13, group: "Nhóm Xúc tiến", noidung: "Hỗ trợ lượt Công nghệ thiết bị tại các triển lãm", sub: "CNTB của doanh nghiệp", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Nguyễn Ngọc Thuỳ Trang, Phạm Huỳnh Trung Nguyên", sanpham: "1. Danh sách CNTB của doanh nghiệp\n2. Hồ sơ sự kiện" },
-  { id: 14, group: "Nhóm Xúc tiến", noidung: "Hỗ trợ lượt Công nghệ thiết bị tại các triển lãm", sub: "Kết quả nghiên cứu của viện, trường", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Nguyễn Ngọc Thuỳ Trang, Phạm Huỳnh Trung Nguyên", sanpham: "1. Danh sách CNTB của viện, trường\n2. Hồ sơ sự kiện" },
-  { id: 15, group: "Nhóm Xúc tiến", noidung: "Số người tham dự kết nối tại các sự kiện", sub: "Tổng số khách tham dự", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Nguyễn Ngọc Thuỳ Trang", sanpham: "1. Danh sách khách tham dự\n2. Hồ sơ sự kiện" },
-  { id: 16, group: "Nhóm Xúc tiến", noidung: "Số người tham dự kết nối tại các sự kiện", sub: "Số người tham dự có nhu cầu", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Nguyễn Ngọc Thuỳ Trang", sanpham: "Các biên bản khảo sát nhu cầu" },
-  { id: 17, group: "Nhóm Xúc tiến", noidung: "Số người tham dự kết nối tại các sự kiện", sub: "Số nhu cầu có khả năng hợp tác, triển khai", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Nguyễn Ngọc Thuỳ Trang", sanpham: "Danh sách nhu cầu có khả năng hợp tác, triển khai" },
-
-  // Nhóm Kết nối
-  { id: 18, group: "Nhóm Kết nối", noidung: "Số kết quả nghiên cứu của viện trường được hỗ trợ kết nối cung cầu", sub: "Chung", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trần Ngô Diệu Trang, Phạm Minh Công", sanpham: "1. Danh sách\n2. Hồ sơ sự kiện" },
-  { id: 19, group: "Nhóm Kết nối", noidung: "Số lượng các sản phẩm KHCN của doanh nghiệp được hỗ trợ kết nối cung cầu", sub: "Chung", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trần Ngô Diệu Trang, Phạm Minh Công", sanpham: "1. Danh sách\n2. Hồ sơ sự kiện" },
-  { id: 20, group: "Nhóm Kết nối", noidung: "Số biên bản ghi nhớ MOU", sub: "Chung", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trần Ngô Diệu Trang, Phạm Minh Công", sanpham: "Các biên bản MOU" },
-  { id: 21, group: "Nhóm Kết nối", noidung: "Số lượng nhu cầu tìm kiếm công nghệ", sub: "Chung", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trần Ngô Diệu Trang, Phạm Minh Công", sanpham: "Các bài viết nhu cầu tìm kiếm công nghệ" },
-  { id: 22, group: "Nhóm Kết nối", noidung: "Số lượng kết nối (có biên bản)", sub: "Chung", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trần Ngô Diệu Trang, Phạm Minh Công", sanpham: "Các biên bản kết nối tư vấn" },
-  { id: 23, group: "Nhóm Kết nối", noidung: "Số lượng hợp đồng sau kết nối", sub: "Chung", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trần Ngô Diệu Trang, Phạm Minh Công", sanpham: "Các Hợp đồng đã ký kết" },
-  { id: 24, group: "Nhóm Kết nối", noidung: "Tổng giá trị hợp đồng", sub: "Chung", pheduyet: "Giám đốc Trung tâm", chidao: "Phó Giám đốc phụ trách", lanhdao: "Võ Duy Khanh", chuyenvien: "Trần Ngô Diệu Trang", sanpham: "Tổng Giá trị hợp đồng" }
-];
-
-let items = [...defaultData];
-let filteredItems = [];
+let rows = [];
+let filteredRows = [];
 let charts = {};
 
 const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+const money = x => new Intl.NumberFormat('vi-VN').format(Number(x || 0)) + ' VNĐ';
+const shortMoney = x => x >= 1e9 ? (x / 1e9).toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' tỷ' : (x / 1e6).toLocaleString('vi-VN', { maximumFractionDigits: 0 }) + ' triệu';
 
-function getGroupBadgeClass(g) {
-  if (g.includes("Techport")) return "badge-techport";
-  if (g.includes("Xúc tiến")) return "badge-xuctien";
-  return "badge-ketnoi";
+function parseMoneySmart(val) {
+  if (val === null || val === undefined) return 0;
+  let str = val.toString().trim();
+  if (!str) return 0;
+
+  if (/^\d+(\.\d+)?$/.test(str) && Number(str) < 1000) {
+    return Math.round(Number(str) * 1e9);
+  }
+
+  let digitsOnly = str.replace(/[^0-9]/g, '');
+  return Number(digitsOnly) || 0;
+}
+
+function cleanCategory(str, type) {
+  if (!str) return 'Chưa phân loại';
+  let s = str.toString().trim();
+  if (type === 'linhvuc') {
+    if (s.includes('Thực phẩn')) return 'Công nghệ thực phẩm';
+    if (s.includes('chế toạ')) return 'Cơ khí, chế tạo máy';
+  }
+  if (type === 'quanly') {
+    if (/^(T\.?\s*Nguyên|A\s*Nguyên|Nguyên)$/i.test(s)) return 'A. Nguyên';
+    if (/^(T\.?\s*Trang)$/i.test(s)) return 'T. Trang';
+    if (/^(D\.?\s*Trang)$/i.test(s)) return 'D. Trang';
+    if (/^(H\.?\s*Lương)$/i.test(s)) return 'H. Lương';
+  }
+  return s;
+}
+
+function parseTSV(text) {
+  const lines = text.trim().split('\n').map(l => l.trim()).filter(Boolean);
+  if (lines.length <= 1) return [];
+  
+  const delimiter = lines[0].includes('\t') ? '\t' : ',';
+  let parsed = [];
+  let validIndex = 1;
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(delimiter).map(v => v.replace(/^"|"$/g, '').trim());
+    
+    let title = cols[1] || cols[0] || '';
+    let cung = cols[2] || '';
+    
+    if (title.toLowerCase().includes('người ký hợp đồng') || 
+        cung.toLowerCase().includes('tên đơn vị') || 
+        title.toLowerCase().includes('nội dung/tên hợp đồng')) {
+      continue;
+    }
+
+    let val = parseMoneySmart(cols[6]);
+    if (val === 0) {
+      for (let c = 0; c < cols.length; c++) {
+        let v = parseMoneySmart(cols[c]);
+        if (v > val) val = v;
+      }
+    }
+
+    if (title.length >= 2) {
+      parsed.push({
+        "STT": validIndex++,
+        "Nội dung/Tên hợp đồng": title,
+        "Đơn vị cung": cols[2] || '',
+        "Người ký bên cung": cols[3] || '',
+        "Đơn vị cầu": cols[4] || '',
+        "Người ký bên cầu": cols[5] || '',
+        "Giá trị hợp đồng": val,
+        "Lĩnh vực": cleanCategory(cols[7], 'linhvuc'),
+        "Loại hợp đồng": cols[8] || 'Chưa phân loại',
+        "Công nghệ chiến lược": cols[9] || 'Chưa phân loại',
+        "Người quản lý": cleanCategory(cols[10], 'quanly')
+      });
+    }
+  }
+
+  return parsed;
+}
+
+async function fetchSheetData() {
+  const loading = document.getElementById('loading-indicator');
+  loading.style.display = 'inline';
+  
+  const targetUrl = SHEET_URL + '&nocache=' + Math.random();
+  const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
+
+  try {
+    let response;
+    try {
+      response = await fetch(targetUrl);
+    } catch (e) {
+      response = await fetch(proxyUrl);
+    }
+    const text = await response.text();
+    rows = parseTSV(text);
+    refreshUI();
+  } catch (err) {
+    console.error("Lỗi đồng bộ:", err);
+    alert("Không thể kết nối đến Google Sheets!");
+  } finally {
+    loading.style.display = 'none';
+  }
+}
+
+function count(rs, key) {
+  let o = {};
+  rs.forEach(r => { let k = r[key] || 'Chưa phân loại'; o[k] = (o[k] || 0) + 1 });
+  return o;
+}
+
+function values(rs, key) {
+  let o = {};
+  rs.forEach(r => { let k = r[key] || 'Chưa phân loại'; o[k] = (o[k] || 0) + Number(r['Giá trị hợp đồng'] || 0) });
+  return o;
 }
 
 function populateSelect(id, vals, defaultLabel) {
@@ -354,242 +403,108 @@ function populateSelect(id, vals, defaultLabel) {
   e.value = "";
 }
 
-function renderCharts(rs) {
-  const groupCounts = { 'Nhóm Techport': 0, 'Nhóm Xúc tiến': 0, 'Nhóm Kết nối': 0 };
-  rs.forEach(r => {
-    if (groupCounts[r.group] !== undefined) groupCounts[r.group]++;
-    else groupCounts[r.group] = 1;
-  });
-
-  if (charts['c1']) charts['c1'].destroy();
-  charts['c1'] = new Chart(document.getElementById('c1'), {
-    type: 'doughnut',
-    data: {
-      labels: Object.keys(groupCounts),
-      datasets: [{
-        data: Object.values(groupCounts),
-        backgroundColor: ['#0284c7', '#f59e0b', '#8b5cf6'],
-        borderWidth: 2,
-        borderColor: '#ffffff'
-      }]
+function renderChart(id, type, labels, data, label) {
+  if (charts[id]) charts[id].destroy();
+  const colors = ['#0284c7','#10b981','#f59e0b','#ef4444','#8b5cf6','#64748b','#06b6d4','#ec4899'];
+  charts[id] = new Chart(document.getElementById(id), {
+    type,
+    data: { 
+      labels, 
+      datasets: [{ label, data, backgroundColor: type === 'doughnut' ? colors : '#0284c7', borderRadius: type === 'bar' ? 6 : 0, borderWidth: 1 }] 
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15, font: { weight: 600 } } }
-      }
-    }
-  });
-
-  const staffCounts = {};
-  rs.forEach(r => {
-    let names = r.chuyenvien.split(',').map(s => s.trim());
-    names.forEach(n => {
-      if (n) staffCounts[n] = (staffCounts[n] || 0) + 1;
-    });
-  });
-
-  if (charts['c2']) charts['c2'].destroy();
-  charts['c2'] = new Chart(document.getElementById('c2'), {
-    type: 'bar',
-    data: {
-      labels: Object.keys(staffCounts),
-      datasets: [{
-        label: 'Số nhiệm vụ tham gia',
-        data: Object.values(staffCounts),
-        backgroundColor: '#0ea5e9',
-        borderRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 2 } },
-        x: { ticks: { font: { size: 11 } } }
-      }
+      plugins: { legend: { display: type === 'doughnut', position: 'right' } },
+      scales: type === 'doughnut' ? {} : { y: { beginAtZero: true } }
     }
   });
 }
 
-function renderTable(rs) {
-  filteredItems = rs;
-  document.getElementById('k_total').textContent = rs.length;
-  document.getElementById('k_techport').textContent = rs.filter(x => x.group.includes('Techport')).length;
-  document.getElementById('k_xuctien').textContent = rs.filter(x => x.group.includes('Xúc tiến')).length;
-  document.getElementById('k_ketnoi').textContent = rs.filter(x => x.group.includes('Kết nối')).length;
+function render(rs) {
+  filteredRows = rs;
+  const totalVal = rs.reduce((s, r) => s + Number(r['Giá trị hợp đồng'] || 0), 0);
+  const avgVal = rs.length ? totalVal / rs.length : 0;
 
-  let allStaff = new Set();
-  rs.forEach(r => r.chuyenvien.split(',').forEach(s => s.trim() && allStaff.add(s.trim())));
-  document.getElementById('k_staff').textContent = allStaff.size;
+  document.getElementById('k1').textContent = rs.length;
+  document.getElementById('k2').textContent = shortMoney(totalVal);
+  document.getElementById('k6').textContent = shortMoney(avgVal);
+  document.getElementById('k3').textContent = new Set(rs.map(r => r['Lĩnh vực'])).size;
+  document.getElementById('k4').textContent = new Set(rs.map(r => r['Loại hợp đồng'])).size;
+  document.getElementById('k5').textContent = new Set(rs.map(r => r['Người quản lý'])).size;
   document.getElementById('count_display').textContent = rs.length;
 
-  renderCharts(rs);
+  let a = count(rs, 'Lĩnh vực'), 
+      b = count(rs, 'Loại hợp đồng'), 
+      c = values(rs, 'Lĩnh vực'), 
+      d = count(rs, 'Công nghệ chiến lược');
 
-  const tbody = document.getElementById('tb');
-  if (rs.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:30px;color:#94a3b8">Không tìm thấy nhiệm vụ phù hợp với bộ lọc</td></tr>`;
-    return;
-  }
+  renderChart('c1', 'bar', Object.keys(a), Object.values(a), 'Số hợp đồng');
+  renderChart('c2', 'doughnut', Object.keys(b), Object.values(b), 'Số hợp đồng');
+  renderChart('c3', 'bar', Object.keys(c), Object.values(c).map(x => x / 1e9), 'Giá trị (Tỷ VNĐ)');
+  renderChart('c4', 'bar', Object.keys(d), Object.values(d), 'Số hợp đồng');
 
-  tbody.innerHTML = rs.map((r, i) => `
+  document.getElementById('tb').innerHTML = rs.map(r => `
     <tr>
-      <td style="font-weight:700;color:#64748b;text-align:center">${i + 1}</td>
-      <td><span class="badge-group ${getGroupBadgeClass(r.group)}">${esc(r.group)}</span></td>
-      <td><div style="font-weight:700;color:#0f172a;font-size:13px">${esc(r.noidung)}</div></td>
-      <td>${r.sub && r.sub !== 'Chung' ? `<span class="badge-sub">📍 ${esc(r.sub)}</span>` : '<span style="color:#94a3b8">Chung</span>'}</td>
-      <td>${r.chuyenvien.split(',').map(name => `<span class="badge-person" style="margin:2px;">👤 ${esc(name.trim())}</span>`).join(' ')}</td>
-      <td><span style="font-weight:600;color:#334155">${esc(r.lanhdao || 'Võ Duy Khanh')}</span></td>
-      <td style="font-size:12px;color:#64748b">
-        <div><b>Chỉ đạo:</b> ${esc(r.chidao || 'Phó Giám đốc')}</div>
-        <div><b>Phê duyệt:</b> ${esc(r.pheduyet || 'Giám đốc')}</div>
-      </td>
-      <td><div class="badge-output">${esc(r.sanpham)}</div></td>
-      <td style="text-align:center">
-        <span style="display:inline-block;padding:4px 8px;border-radius:6px;background:#f1f5f9;font-size:11px;color:#475569;font-weight:600">
-          🗓️ T1 - T12
-        </span>
-      </td>
+      <td>${r.STT}</td>
+      <td><b style="color:#0f172a">${esc(r['Nội dung/Tên hợp đồng'])}</b></td>
+      <td>${esc(r['Đơn vị cung'])}</td>
+      <td>${esc(r['Đơn vị cầu'])}</td>
+      <td><b style="color:#0284c7">${money(r['Giá trị hợp đồng'])}</b></td>
+      <td><span class="badge">${esc(r['Lĩnh vực'])}</span></td>
+      <td>${esc(r['Loại hợp đồng'])}</td>
+      <td><span class="badge-tech">${esc(r['Công nghệ chiến lược'] || 'Chưa phân loại')}</span></td>
+      <td>${esc(r['Người quản lý'])}</td>
     </tr>
   `).join('');
 }
 
-function applyFilter() {
-  const q = document.getElementById('q').value.toLowerCase().trim();
-  const f_group = document.getElementById('f_group').value;
-  const f_staff = document.getElementById('f_staff').value;
+function apply() {
+  let q = document.getElementById('q').value.toLowerCase(),
+      f = document.getElementById('f').value,
+      t = document.getElementById('t').value,
+      m = document.getElementById('m').value,
+      s = document.getElementById('s').value;
 
-  const res = items.filter(r => {
-    const textData = `${r.group} ${r.noidung} ${r.sub} ${r.chuyenvien} ${r.sanpham} ${r.lanhdao}`.toLowerCase();
-    const matchesQuery = !q || textData.includes(q);
-    const matchesGroup = !f_group || r.group === f_group;
-    const matchesStaff = !f_staff || r.chuyenvien.includes(f_staff);
-    return matchesQuery && matchesGroup && matchesStaff;
-  });
-
-  renderTable(res);
+  let rs = rows.filter(r => 
+    Object.values(r).join(' ').toLowerCase().includes(q) &&
+    (!f || r['Lĩnh vực'] === f) &&
+    (!t || r['Loại hợp đồng'] === t) &&
+    (!m || r['Người quản lý'] === m) &&
+    (!s || r['Công nghệ chiến lược'] === s)
+  );
+  render(rs);
 }
 
-// Tự động phân tích CSV Google Sheets
-function parseCSV(text) {
-  let p = '', c = '', r = [];
-  let q = false;
-  let row = [''];
-  for (let i = 0; i < text.length; i++) {
-    c = text[i];
-    let next = text[i+1];
-    if (c === '"') {
-      if (q && next === '"') { row[row.length - 1] += '"'; i++; }
-      else { q = !q; }
-    } else if (c === ',' && !q) {
-      row.push('');
-    } else if ((c === '\r' || c === '\n') && !q) {
-      if (c === '\r' && next === '\n') { i++; }
-      r.push(row);
-      row = [''];
-    } else {
-      row[row.length - 1] += c;
-    }
-  }
-  if (row.length > 1 || row[0] !== '') r.push(row);
-  return r;
+function refreshUI() {
+  populateSelect('f', rows.map(r => r['Lĩnh vực']), 'Tất cả Lĩnh vực');
+  populateSelect('t', rows.map(r => r['Loại hợp đồng']), 'Tất cả Loại HĐ');
+  populateSelect('m', rows.map(r => r['Người quản lý']), 'Tất cả Người quản lý');
+  populateSelect('s', rows.map(r => r['Công nghệ chiến lược']), 'Tất cả Công nghệ chiến lược');
+  apply();
 }
 
-async function syncGoogleSheets() {
-  const statusEl = document.getElementById('sync-status');
-  statusEl.innerHTML = '🔄 Đang đồng bộ Google Sheets...';
-  try {
-    const res = await fetch(GSHEET_CSV_URL);
-    if (!res.ok) throw new Error('Không thể tải CSV');
-    const csvText = await res.text();
-    const rows = parseCSV(csvText);
-
-    // Xử lý dữ liệu động nếu sheets thay đổi
-    let parsedItems = [];
-    let currentGroup = "Nhóm Techport";
-    
-    for (let i = 0; i < rows.length; i++) {
-      let r = rows[i];
-      let c1 = (r[1] || '').trim();
-      let c6 = (r[6] || '').trim();
-      let c7 = (r[7] || '').trim();
-
-      // Bỏ qua dòng tiêu đề và dòng chứa "6 rõ"
-      if (!c1 && !c6 && !c7) continue;
-      if (c1.includes("THEO DÕI NHIỆM VỤ") || c1.includes("Rõ việc") || c1.includes("Nhóm/Nội dung")) continue;
-
-      if (c1.startsWith("Nhóm")) {
-        currentGroup = c1;
-        continue;
-      }
-
-      let sub = (r[2] || '').trim();
-      let chuyenvien = c6;
-      let sanpham = c7;
-
-      if (c1 || sub || chuyenvien) {
-        parsedItems.push({
-          id: parsedItems.length + 1,
-          group: currentGroup,
-          noidung: c1 || "Nội dung tiếp nối",
-          sub: sub || "Chung",
-          pheduyet: (r[3] || '').trim() || "Giám đốc Trung tâm",
-          chidao: (r[4] || '').trim() || "Phó Giám đốc phụ trách",
-          lanhdao: (r[5] || '').trim() || "Võ Duy Khanh",
-          chuyenvien: chuyenvien || "Chưa phân công",
-          sanpham: sanpham || "Theo quy định"
-        });
-      }
-    }
-
-    if (parsedItems.length > 5) {
-      items = parsedItems;
-      statusEl.innerHTML = '🟢 Đã đồng bộ trực tuyến';
-    } else {
-      statusEl.innerHTML = '🟢 Kết nối ổn định';
-    }
-    applyFilter();
-  } catch (err) {
-    console.warn('Lỗi kết nối trực tiếp, sử dụng dữ liệu bộ nhớ đệm:', err);
-    statusEl.innerHTML = '🟡 Chế độ ngoại tuyến';
-  }
-}
-
-function initDashboard() {
-  const groups = [...new Set(items.map(x => x.group))];
-  const staffSet = new Set();
-  items.forEach(x => x.chuyenvien.split(',').forEach(s => s.trim() && staffSet.add(s.trim())));
-
-  populateSelect('f_group', groups, 'Tất cả Nhóm nhiệm vụ');
-  populateSelect('f_staff', Array.from(staffSet), 'Tất cả Chuyên viên');
-
-  ['q', 'f_group', 'f_staff'].forEach(id => document.getElementById(id).addEventListener('input', applyFilter));
-
-  renderTable(items);
-  syncGoogleSheets();
-}
-
+// XUẤT FILE EXCEL ĐIỀU HƯỚNG TRỰC TIẾP (KHÔNG LO TRÌNH DUYỆT CHẶN POPUP)
 function exportExcel() {
-  if (!filteredItems.length) return alert('Không có dữ liệu để xuất!');
+  if (!filteredRows.length) return alert('Không có dữ liệu để xuất!');
 
-  let dataRows = '';
-  filteredItems.forEach((r, idx) => {
-    dataRows += `
+  let dataRowsHtml = '';
+  filteredRows.forEach(r => {
+    let valFormatted = new Intl.NumberFormat('vi-VN').format(Number(r['Giá trị hợp đồng'] || 0));
+    dataRowsHtml += `
       <tr>
-        <td class="data-center">${idx + 1}</td>
-        <td class="data-left">${esc(r.group)}</td>
-        <td class="data-left">${esc(r.noidung)}</td>
-        <td class="data-left">${esc(r.sub)}</td>
-        <td class="data-left">${esc(r.pheduyet)}</td>
-        <td class="data-left">${esc(r.chidao)}</td>
-        <td class="data-left">${esc(r.lanhdao)}</td>
-        <td class="data-left">${esc(r.chuyenvien)}</td>
-        <td class="data-left">${esc(r.sanpham)}</td>
-        <td class="data-center">Tháng 01 - Tháng 12</td>
-      </tr>
-    `;
+        <td class="data-center">${r.STT}</td>
+        <td class="data-left">${esc(r['Nội dung/Tên hợp đồng'])}</td>
+        <td class="data-left">${esc(r['Đơn vị cung'])}</td>
+        <td class="data-left">${esc(r['Người ký bên cung'])}</td>
+        <td class="data-left">${esc(r['Đơn vị cầu'])}</td>
+        <td class="data-left">${esc(r['Người ký bên cầu'])}</td>
+        <td class="data-center">${valFormatted}</td>
+        <td class="data-left">${esc(r['Lĩnh vực'])}</td>
+        <td class="data-left">${esc(r['Loại hợp đồng'])}</td>
+        <td class="data-left">${esc(r['Công nghệ chiến lược'] || 'Chưa phân loại')}</td>
+        <td class="data-left">${esc(r['Người quản lý'])}</td>
+      </tr>`;
   });
 
   const excelTemplate = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
@@ -597,53 +512,58 @@ function exportExcel() {
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!--[if gte mso 9]><xml>
 <x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
-<x:Name>NhiemVu_PhongGDCN</x:Name>
+<x:Name>Sheet1</x:Name>
 <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
 </x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook>
 </xml><![endif]-->
 <style>
   table { border-collapse: collapse; font-family: 'Times New Roman', serif; }
-  td, th { border: 0.5pt solid #000000; vertical-align: middle; padding: 6px; }
-  .header-title { font-size: 14pt; font-weight: bold; text-align: center; }
-  .header { font-size: 11pt; font-weight: bold; text-align: center; background-color: #e0f2fe; }
-  .data-center { font-size: 11pt; text-align: center; }
-  .data-left { font-size: 11pt; text-align: left; }
+  td, th { border: 0.5pt solid #000000; vertical-align: middle; mso-number-format:"\\@"; }
+  .title { font-size: 11pt; font-weight: bold; border: 0.5pt solid #000000; }
+  .header { font-size: 14pt; font-weight: bold; text-align: center; white-space: normal; background-color: #ffffff; }
+  .data-center { font-size: 14pt; text-align: center; white-space: normal; }
+  .data-left { font-size: 14pt; text-align: left; white-space: normal; }
 </style>
 </head>
 <body>
 <table>
-  <tr><td colspan="10" class="header-title">TRUNG TÂM KHỞI NGHIỆP SÁNG TẠO - PHÒNG GIAO DỊCH CÔNG NGHỆ</td></tr>
+  <tr><td class="title">Quản lý hợp đồng</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
   <tr>
-    <th class="header">STT</th>
-    <th class="header">Nhóm công tác</th>
-    <th class="header">Nội dung nhiệm vụ</th>
-    <th class="header">Phân loại / Đối tượng</th>
-    <th class="header">Phê duyệt</th>
-    <th class="header">Chỉ đạo thực hiện</th>
-    <th class="header">Lãnh đạo phòng</th>
-    <th class="header">Chuyên viên thực hiện</th>
-    <th class="header">Sản phẩm đầu ra</th>
-    <th class="header">Thời gian thực hiện</th>
+    <td rowspan="2" class="header">STT</td>
+    <td rowspan="2" class="header">Nội dung/Tên Hợp đồng</td>
+    <td colspan="2" class="header">Thông tin đơn vị cung</td>
+    <td colspan="2" class="header">Thông tin đơn vị cầu</td>
+    <td rowspan="2" class="header">Giá trị Hợp đồng (VNĐ)</td>
+    <td rowspan="2" class="header">Lĩnh vực</td>
+    <td rowspan="2" class="header">Loại hợp đồng</td>
+    <td rowspan="2" class="header">Công nghệ chiến lược</td>
+    <td rowspan="2" class="header">Người quản lý</td>
   </tr>
-  ${dataRows}
+  <tr>
+    <td class="header">Tên đơn vị</td>
+    <td class="header">Người ký hợp đồng/ Chức vụ</td>
+    <td class="header">Tên đơn vị</td>
+    <td class="header">Người ký hợp đồng/ Chức vụ</td>
+  </tr>
+  ${dataRowsHtml}
 </table>
 </body>
 </html>`;
 
-  const blob = new Blob(["\ufeff" + excelTemplate], { type: 'application/vnd.ms-excel;charset=utf-8' });
-  const url = window.URL.createObjectURL(blob);
+  // Kỹ thuật Data URI tải trực tiếp (Bao chống chặn popup trên mọi trình duyệt)
+  const encodedUri = 'data:application/vnd.ms-excel;charset=utf-8,' + encodeURIComponent(excelTemplate);
   const a = document.createElement('a');
-  a.href = url;
-  a.download = `NhiemVu_PhongGDCN_${new Date().toISOString().slice(0,10)}.xls`;
+  a.setAttribute('href', encodedUri);
+  a.setAttribute('download', `HD_Export_${new Date().toISOString().slice(0,10)}.xls`);
   document.body.appendChild(a);
   a.click();
-  setTimeout(() => {
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-  }, 200);
+  document.body.removeChild(a);
 }
 
-initDashboard();
+['q', 'f', 't', 'm', 's'].forEach(id => document.getElementById(id).addEventListener('input', apply));
+
+fetchSheetData();
 </script>
 </body>
 </html>
